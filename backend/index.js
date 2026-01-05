@@ -17,18 +17,19 @@ const jwt = require("@fastify/jwt");
 // A. CORS (Cross-Origin Resource Sharing)
 // Mengizinkan Frontend (Vue.js) mengakses Backend ini.
 fastify.register(require("@fastify/cors"), {
-  origin: "*", // Izinkan semua origin (untuk development)
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    origin: ["http://localhost:3000", "http://10.0.2.2:3000"], // Izinkan semua origin (untuk development)
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    credentials: true,
 });
 
 // B. DATABASE (MySQL)
 // Mengatur koneksi ke database menggunakan kredensial dari .env
 fastify.register(require("@fastify/mysql"), {
-  promise: true,
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASS,
-  database: process.env.DB_NAME,
+    promise: true,
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    database: process.env.DB_NAME,
 });
 
 // C. JWT (JSON Web Token)
@@ -41,13 +42,13 @@ fastify.register(jwt, { secret: process.env.JWT_SECRET });
 
 // Fungsi 'authenticate' sebagai "Satpam" rute.
 // Bisa dipanggil di rute manapun dengan { preHandler: [fastify.authenticate] }
-fastify.decorate("authenticate", async function(request, reply) {
-  try {
-    // Verifikasi token di header Authorization: Bearer <token>
-    await request.jwtVerify();
-  } catch (err) {
-    reply.send(err);
-  }
+fastify.decorate("authenticate", async function (request, reply) {
+    try {
+        // Verifikasi token di header Authorization: Bearer <token>
+        await request.jwtVerify();
+    } catch (err) {
+        reply.send(err);
+    }
 });
 
 // ==================================================
@@ -83,17 +84,17 @@ fastify.register(require("./routes/content"), { prefix: "/content" });
 // 6. JALANKAN SERVER
 // ==================================================
 const start = async () => {
-  try {
-    // Gunakan process.env.PORT jika ada (untuk deploy), default 3000
-    // Host '0.0.0.0' penting agar bisa diakses dari network lain (Docker/LAN)
-    const port = process.env.PORT || 3000;
-    await fastify.listen({ port: port, host: "0.0.0.0" });
+    try {
+        // Gunakan process.env.PORT jika ada (untuk deploy), default 3000
+        // Host '0.0.0.0' penting agar bisa diakses dari network lain (Docker/LAN)
+        const port = process.env.PORT || 3000;
+        await fastify.listen({ port: port, host: "0.0.0.0" });
 
-    console.log(`Server backend berjalan di http://localhost:${port}`);
-  } catch (err) {
-    fastify.log.error(err);
-    process.exit(1);
-  }
+        console.log(`Server backend berjalan di http://localhost:${port}`);
+    } catch (err) {
+        fastify.log.error(err);
+        process.exit(1);
+    }
 };
 
 start();
