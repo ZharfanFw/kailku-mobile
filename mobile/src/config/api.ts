@@ -3,17 +3,7 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 
-const getAPIBaseURL = () => {
-    if (Platform.OS === "android") {
-        return "http://192.168.1.18:3000";
-    }
-    if (Platform.OS === "ios") {
-        return "http://192.168.1.18:3000";
-    }
-    return "http://192.168.1.18:3000";
-};
-
-const API_BASE_URL = getAPIBaseURL();
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
 
 export const apiClient = axios.create({
     baseURL: API_BASE_URL,
