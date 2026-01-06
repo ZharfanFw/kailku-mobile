@@ -6,17 +6,14 @@ import {
     Image,
     ScrollView,
     TouchableOpacity,
-    Dimensions,
-    SafeAreaView,
     StatusBar,
     ActivityIndicator,
     Alert,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { api } from "../../src/services/api"; // Import API services
+import { api } from "../../src/services/api";
 
-// Definisi tipe data (supaya coding lebih aman)
 interface SpotDetail {
     id: string;
     name: string;
@@ -29,26 +26,31 @@ interface SpotDetail {
 
 export default function InformationPlaceScreen() {
     const router = useRouter();
-    // 1. Tangkap ID dari navigasi sebelumnya
     const { id } = useLocalSearchParams();
 
     const [spot, setSpot] = useState<SpotDetail | null>(null);
     const [loading, setLoading] = useState(true);
 
-    // 2. Fetch Data saat halaman dibuka
     useEffect(() => {
         const fetchSpotDetail = async () => {
             if (!id) return;
 
             try {
                 setLoading(true);
-                // Pastikan id diambil string pertamanya jika berupa array
                 const spotId = Array.isArray(id) ? id[0] : id;
-                const response = await api.spot.getById(spotId);
+                const spotData = await api.spots.getById(spotId);
 
-                // Sesuaikan dengan struktur response backendmu
-                // Jika backend return { data: { ... } }
-                setSpot(response.data.data || response.data);
+                const spotDetail: SpotDetail = {
+                    id: spotData.id,
+                    name: spotData.nama,
+                    location: spotData.lokasi,
+                    description: spotData.description || "",
+                    price: spotData.harga_per_jam,
+                    image_url: spotData.image_url,
+                    rating: spotData.rating,
+                };
+
+                setSpot(spotDetail);
             } catch (error) {
                 console.error("Error fetching spot:", error);
                 Alert.alert(
@@ -64,7 +66,6 @@ export default function InformationPlaceScreen() {
         fetchSpotDetail();
     }, [id]);
 
-    // Helper format rupiah
     const formatRupiah = (number: number) => {
         return new Intl.NumberFormat("id-ID", {
             style: "currency",
@@ -73,7 +74,6 @@ export default function InformationPlaceScreen() {
         }).format(number);
     };
 
-    // Tampilan Loading
     if (loading) {
         return (
             <View style={styles.loadingContainer}>
@@ -82,7 +82,6 @@ export default function InformationPlaceScreen() {
         );
     }
 
-    // Jika data tidak ditemukan
     if (!spot) return null;
 
     return (

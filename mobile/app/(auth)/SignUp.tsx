@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
     scrollContainer: {
         flexGrow: 1,
         justifyContent: "center",
-        padding: 20,
+        padding: 24,
         paddingTop: 40,
     },
     avatarContainer: { alignItems: "center", marginBottom: 30 },
@@ -243,12 +243,12 @@ const styles = StyleSheet.create({
         borderRadius: 70,
         backgroundColor: "#DCEAF7",
     },
-    formContainer: { width: "100%" },
+    formContainer: { width: "100%", gap: 16 },
     row: {
         flexDirection: "row",
         justifyContent: "space-between",
         width: "100%",
-        marginBottom: 15,
+        marginBottom: 16,
     },
     halfInputContainer: { width: "48%" },
     input: {
@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: "#333",
         width: "100%",
-        marginBottom: 15,
+        marginBottom: 16,
     },
     button: {
         backgroundColor: "#103568",

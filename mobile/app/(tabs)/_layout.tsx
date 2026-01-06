@@ -6,7 +6,7 @@ import { HapticTab } from "@/components/haptic-tab";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useSegments } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useAuth } from "../../src/contexts/AuthContext";
+import { useAuth } from "@/src/contexts/AuthContext";
 
 export default function TabLayout() {
     const insets = useSafeAreaInsets();
@@ -145,14 +145,6 @@ export default function TabLayout() {
             />
             <Tabs.Screen
                 name="profile"
-                listeners={{
-                    tabPress: (e) => {
-                        if (!isAuthenticated) {
-                            e.preventDefault();
-                            router.replace("/ProfileGuest");
-                        }
-                    },
-                }}
                 options={{
                     title: "Profile",
                     tabBarIcon: ({ color, focused }) => (

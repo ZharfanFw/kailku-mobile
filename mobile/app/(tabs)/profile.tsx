@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
     View,
     Text,
@@ -9,9 +9,10 @@ import {
     SafeAreaView,
     Alert,
     Switch,
+    Linking,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter, router } from "expo-router";
+import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/src/contexts/AuthContext";
 
@@ -23,24 +24,15 @@ export default function ProfileScreen() {
 
     const { user, isAuthenticated, logout } = useAuth();
 
-    useEffect(() => {
-        if (!isAuthenticated) {
-            router.replace("/ProfileGuest");
-        }
-    }, [isAuthenticated]);
-
-    if (!isAuthenticated) {
-        return null;
-    }
-
-    const userData = {
-        name: "Nama Pengguna",
-        email: "user@email.com",
-        phone: "+62 812 3456 7890",
-        memberSince: "Januari 2025",
-        totalBookings: 12,
-        totalReviews: 5,
-    };
+    const userData = user
+        ? {
+              name: user.full_name || user.username,
+              email: user.email,
+              memberSince: "Januari 2025",
+              totalBookings: 0,
+              totalReviews: 0,
+          }
+        : null;
 
     const handleLogout = () => {
         Alert.alert("Keluar", "Apakah Anda yakin ingin keluar?", [
@@ -48,12 +40,117 @@ export default function ProfileScreen() {
             {
                 text: "Ya, Keluar",
                 style: "destructive",
-                onPress: () => {
-                    router.replace("/");
+                onPress: async () => {
+                    await logout();
                 },
             },
         ]);
     };
+
+    if (!isAuthenticated) {
+        return (
+            <SafeAreaView style={styles.container}>
+                <ScrollView
+                    contentContainerStyle={styles.scrollContent}
+                    showsVerticalScrollIndicator={false}
+                >
+                    {/* Header */}
+                    <View style={styles.header}>
+                        <View style={styles.avatarPlaceholder}>
+                            <Ionicons name="person" size={50} color="#103568" />
+                        </View>
+                        <Text style={styles.title}>Masuk ke Kailku</Text>
+                        <Text style={styles.subtitle}>
+                            Login untuk pengalaman memancing yang lebih baik
+                        </Text>
+                    </View>
+                    {/* Login Button */}
+                    <TouchableOpacity
+                        style={styles.primaryButton}
+                        onPress={() => router.push("/(auth)/Login")}
+                    >
+                        <Text style={styles.primaryButtonText}>Masuk</Text>
+                    </TouchableOpacity>
+                    {/* Signup Button */}
+                    <TouchableOpacity
+                        style={styles.secondaryButton}
+                        onPress={() => router.push("/(auth)/SignUp")}
+                    >
+                        <Text style={styles.secondaryButtonText}>Daftar</Text>
+                    </TouchableOpacity>
+                    {/* Divider */}
+                    <View style={styles.divider}>
+                        <View style={styles.dividerLine} />
+                        <Text style={styles.dividerText}>atau</Text>
+                        <View style={styles.dividerLine} />
+                    </View>
+                    {/* Help Section (Dummy) */}
+                    <View style={styles.helpSection}>
+                        <Text style={styles.helpTitle}>Bantuan</Text>
+
+                        <TouchableOpacity
+                            style={styles.helpItem}
+                            onPress={() =>
+                                Linking.openURL("tel:+6281234567890")
+                            }
+                        >
+                            <Ionicons
+                                name="call-outline"
+                                size={20}
+                                color="#333"
+                            />
+                            <Text style={styles.helpText}>Hubungi Kami</Text>
+                            <Ionicons
+                                name="chevron-forward"
+                                size={20}
+                                color="#CCC"
+                            />
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.helpItem}>
+                            <Ionicons
+                                name="mail-outline"
+                                size={20}
+                                color="#333"
+                            />
+                            <Text style={styles.helpText}>Email Kami</Text>
+                            <Ionicons
+                                name="chevron-forward"
+                                size={20}
+                                color="#CCC"
+                            />
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.helpItem}>
+                            <Ionicons
+                                name="chatbubble-ellipses-outline"
+                                size={20}
+                                color="#333"
+                            />
+                            <Text style={styles.helpText}>FAQ</Text>
+                            <Ionicons
+                                name="chevron-forward"
+                                size={20}
+                                color="#CCC"
+                            />
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.helpItem}>
+                            <Ionicons
+                                name="information-circle-outline"
+                                size={20}
+                                color="#333"
+                            />
+                            <Text style={styles.helpText}>Tentang Kailku</Text>
+                            <Ionicons
+                                name="chevron-forward"
+                                size={20}
+                                color="#CCC"
+                            />
+                        </TouchableOpacity>
+                    </View>
+                    <View style={{ height: 50 }} />
+                </ScrollView>
+            </SafeAreaView>
+        );
+    }
 
     return (
         <SafeAreaView style={styles.container}>
@@ -87,16 +184,18 @@ export default function ProfileScreen() {
                             <Ionicons name="camera" size={16} color="#FFF" />
                         </TouchableOpacity>
                     </View>
-                    <Text style={styles.userName}>{userData.name}</Text>
-                    <Text style={styles.userEmail}>{userData.email}</Text>
+                    <Text style={styles.userName}>{userData?.name || "-"}</Text>
+                    <Text style={styles.userEmail}>
+                        {userData?.email || "-"}
+                    </Text>
                     <Text style={styles.memberSince}>
-                        Anggota sejak {userData.memberSince}
+                        Anggota sejak {userData?.memberSince || "-"}
                     </Text>
                 </View>
                 <View style={styles.statsCard}>
                     <View style={styles.statItem}>
                         <Text style={styles.statValue}>
-                            {userData.totalBookings}
+                            {userData?.totalBookings}
                         </Text>
                         <Text style={styles.statLabel}>Booking</Text>
                     </View>
@@ -108,7 +207,7 @@ export default function ProfileScreen() {
                     />
                     <View style={styles.statItem}>
                         <Text style={styles.statValue}>
-                            {userData.totalReviews}
+                            {userData?.totalReviews}
                         </Text>
                         <Text style={styles.statLabel}>Review</Text>
                     </View>
@@ -507,5 +606,56 @@ const styles = StyleSheet.create({
         color: "#999",
         textAlign: "center",
         marginBottom: 10,
+    },
+    title: {
+        fontSize: 24,
+        fontWeight: "bold",
+        color: "#103568",
+        marginBottom: 5,
+    },
+    subtitle: { fontSize: 14, color: "#666", textAlign: "center" },
+    primaryButton: {
+        backgroundColor: "#103568",
+        paddingVertical: 15,
+        borderRadius: 12,
+        alignItems: "center",
+        marginBottom: 12,
+    },
+    primaryButtonText: { color: "#FFF", fontSize: 16, fontWeight: "bold" },
+    secondaryButton: {
+        backgroundColor: "transparent",
+        borderWidth: 1,
+        borderColor: "#103568",
+        paddingVertical: 15,
+        borderRadius: 12,
+        alignItems: "center",
+    },
+    secondaryButtonText: { color: "#103568", fontSize: 16, fontWeight: "bold" },
+    divider: { flexDirection: "row", alignItems: "center", marginVertical: 20 },
+    dividerLine: { flex: 1, height: 1, backgroundColor: "#E5E5E5" },
+    dividerText: { marginHorizontal: 15, color: "#999" },
+    helpSection: { marginTop: 10 },
+    helpTitle: {
+        fontSize: 18,
+        fontWeight: "bold",
+        color: "#333",
+        marginBottom: 15,
+    },
+    helpItem: {
+        flexDirection: "row",
+        alignItems: "center",
+        paddingVertical: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: "#F0F0F0",
+    },
+    helpText: { flex: 1, marginLeft: 15, fontSize: 14, color: "#333" },
+    avatarPlaceholder: {
+        width: 100,
+        height: 100,
+        borderRadius: 50,
+        backgroundColor: "#EBF8FF",
+        justifyContent: "center",
+        alignItems: "center",
+        marginBottom: 15,
     },
 });

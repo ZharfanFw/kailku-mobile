@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
         gap: 16,
     },
     inputLabelContainer: {
-        marginBottom: -10, // Rapatkan label dengan input
+        marginBottom: 8, // Rapatkan label dengan input
         marginLeft: 4,
     },
     label: {

@@ -13,6 +13,8 @@ export interface Spot {
     lokasi: string;
     harga_per_jam: number;
     image_url?: string;
+    rating?: number;
+    description?: string;
 }
 
 export interface Booking {
