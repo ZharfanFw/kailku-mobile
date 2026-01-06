@@ -12,7 +12,8 @@ export const api = {
         return response.data;
     },
 
-    detele: async <T>(endpoint: string): Promise<T> => {
+    // UBAH INI:
+    delete: async <T>(endpoint: string): Promise<T> => { // Sebelumnya 'detele'
         const response = await apiClient.delete<T>(endpoint);
         return response.data;
     },
