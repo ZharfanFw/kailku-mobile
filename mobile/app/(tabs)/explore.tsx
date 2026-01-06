@@ -1,5 +1,3 @@
-// mobile/app/(tabs)/explore.tsx
-
 import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
@@ -13,15 +11,18 @@ import {
   SafeAreaView,
   Platform,
   StatusBar,
+  TextInput, // Added TextInput
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { api } from "../../src/services/api";
-import { Spot } from "../../src/types"; // Pastikan import ini benar
+import { Spot } from "../../src/types";
 
 export default function ExploreScreen() {
   const router = useRouter();
   const [spots, setSpots] = useState<Spot[]>([]);
+  const [filteredSpots, setFilteredSpots] = useState<Spot[]>([]); // State untuk hasil filter
+  const [searchQuery, setSearchQuery] = useState(""); // State untuk text search
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -29,6 +30,7 @@ export default function ExploreScreen() {
     try {
       const data = await api.spots.getAll();
       setSpots(data);
+      setFilteredSpots(data); // Inisialisasi data filter
     } catch (error) {
       console.error("Gagal mengambil data spot:", error);
     } finally {
@@ -41,6 +43,21 @@ export default function ExploreScreen() {
     fetchSpots();
   }, []);
 
+  // Logika Pencarian
+  const handleSearch = (text: string) => {
+    setSearchQuery(text);
+    if (text) {
+      const newData = spots.filter((item) => {
+        const itemData = item.nama ? item.nama.toUpperCase() : "".toUpperCase();
+        const textData = text.toUpperCase();
+        return itemData.indexOf(textData) > -1;
+      });
+      setFilteredSpots(newData);
+    } else {
+      setFilteredSpots(spots);
+    }
+  };
+
   const onRefresh = () => {
     setRefreshing(true);
     fetchSpots();
@@ -49,51 +66,51 @@ export default function ExploreScreen() {
   const renderItem = ({ item }: { item: Spot }) => (
     <TouchableOpacity
       style={styles.card}
+      // PERBAIKAN DI SINI:
       onPress={() => {
         router.push({
-            pathname: "/(booking)/InformationPlace",
+            pathname: "/InformationPlace", // Hapus '/(booking)'
             params: { id: item.id } 
         });
       }}
     >
-      {/* GAMBAR */}
       <Image
-        // Backend kamu menyimpan nama file saja (misal: 'telagaindah.jpg'), 
-        // jadi harus digabung dengan URL base folder gambar di backend jika perlu.
-        // Untuk sementara kita pakai placeholder jika URL tidak lengkap.
-        source={{ 
-            uri: item.image_url && item.image_url.startsWith('http') 
-              ? item.image_url 
-              : `https://placehold.co/600x400/103568/FFF?text=${item.nama.replace(/ /g, '+')}`
+        source={{
+          uri:
+            item.image_url && item.image_url.startsWith("http")
+              ? item.image_url
+              : `https://placehold.co/600x400/103568/FFF?text=${item.nama.replace(
+                  / /g,
+                  "+"
+                )}`,
         }}
         style={styles.cardImage}
         resizeMode="cover"
       />
-      
+
       <View style={styles.cardContent}>
         <View style={styles.cardHeader}>
-          {/* PERBAIKAN 1: item.name -> item.nama */}
           <Text style={styles.cardTitle}>{item.nama}</Text>
-          
+
           <View style={styles.ratingContainer}>
             <Ionicons name="star" size={14} color="#FFD700" />
-            {/* PERBAIKAN 2: Rating tidak ada di tabel utama, jadi kita pakai default dulu */}
             <Text style={styles.ratingText}>{item.rating || "4.5"}</Text>
           </View>
         </View>
 
         <View style={styles.locationContainer}>
           <Ionicons name="location-outline" size={14} color="#666" />
-          {/* PERBAIKAN 3: item.address -> item.lokasi */}
           <Text style={styles.locationText} numberOfLines={1}>
             {item.lokasi || "Lokasi belum tersedia"}
           </Text>
         </View>
 
         <View style={styles.cardFooter}>
-          {/* PERBAIKAN 4: item.price -> item.harga_per_jam */}
           <Text style={styles.priceText}>
-            Rp {item.harga_per_jam ? item.harga_per_jam.toLocaleString("id-ID") : "0"}
+            Rp{" "}
+            {item.harga_per_jam
+              ? item.harga_per_jam.toLocaleString("id-ID")
+              : "0"}
             <Text style={styles.priceUnit}> /jam</Text>
           </Text>
           <View style={styles.bookButton}>
@@ -106,14 +123,37 @@ export default function ExploreScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* HEADER DENGAN SEARCH BAR */}
       <View style={styles.header}>
-        <View>
+        <View style={{ flex: 1, marginRight: 15 }}>
           <Text style={styles.greeting}>Mau mancing di mana?</Text>
           <Text style={styles.subGreeting}>Temukan spot terbaik hari ini</Text>
         </View>
-        <TouchableOpacity style={styles.profileButton} onPress={() => router.push("/(tabs)/profile")}>
-           <Ionicons name="person-circle-outline" size={40} color="#103568" />
+        <TouchableOpacity
+          style={styles.profileButton}
+          onPress={() => router.push("/(tabs)/profile")}
+        >
+          <Ionicons name="person-circle-outline" size={40} color="#103568" />
         </TouchableOpacity>
+      </View>
+
+      {/* SEARCH BAR COMPONENT */}
+      <View style={styles.searchContainer}>
+        <View style={styles.searchBar}>
+          <Ionicons
+            name="search"
+            size={20}
+            color="#999"
+            style={{ marginRight: 10 }}
+          />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Cari nama kolam..."
+            placeholderTextColor="#999"
+            value={searchQuery}
+            onChangeText={handleSearch}
+          />
+        </View>
       </View>
 
       {isLoading ? (
@@ -123,18 +163,24 @@ export default function ExploreScreen() {
         </View>
       ) : (
         <FlatList
-          data={spots}
+          data={filteredSpots} // Menggunakan data hasil filter
           renderItem={renderItem}
           keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#103568"]} />
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={["#103568"]}
+            />
           }
           ListEmptyComponent={
             <View style={styles.center}>
               <Ionicons name="alert-circle-outline" size={48} color="#ccc" />
-              <Text style={{ marginTop: 10, color: "#999" }}>Belum ada tempat mancing tersedia.</Text>
+              <Text style={{ marginTop: 10, color: "#999" }}>
+                Tidak ada tempat yang cocok.
+              </Text>
             </View>
           }
         />
@@ -154,8 +200,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 20,
-    paddingVertical: 15,
-    backgroundColor: "#fff",
+    paddingTop: 15,
+    paddingBottom: 10,
+    backgroundColor: "#F8F9FA", // Samakan dengan background container
   },
   greeting: {
     fontSize: 20,
@@ -170,6 +217,32 @@ const styles = StyleSheet.create({
   profileButton: {
     padding: 4,
   },
+  // Style Search Bar Baru
+  searchContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 15,
+    backgroundColor: "#F8F9FA",
+  },
+  searchBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFF",
+    height: 48,
+    borderRadius: 12,
+    paddingHorizontal: 15,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: "#E5E5E5",
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    color: "#333",
+  },
   center: {
     flex: 1,
     justifyContent: "center",
@@ -178,6 +251,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 20,
+    paddingTop: 5,
     paddingBottom: 100,
   },
   card: {

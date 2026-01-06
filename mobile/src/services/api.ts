@@ -17,6 +17,10 @@ export const api = {
         const response = await apiClient.delete<T>(endpoint);
         return response.data;
     },
+    patch: async <T>(endpoint: string, data: object): Promise<T> => {
+        const response = await apiClient.patch<T>(endpoint, data);
+        return response.data;
+    },
 
     auth: {
         login: async (email: string, password: string) => {
@@ -38,6 +42,16 @@ export const api = {
 
         logout: async () => {
             return await api.post("/auth/logout", {});
+        },
+        
+        updateProfile: async (data: {
+            username?: string;
+            first_name?: string;
+            last_name?: string;
+            phone?: string;
+            address?: string;
+        }) => {
+            return await api.patch("/auth/my-profile", data);
         },
     },
 

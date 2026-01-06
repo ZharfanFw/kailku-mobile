@@ -10,7 +10,7 @@ import {
     Dimensions,
     Alert,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 
 const { width } = Dimensions.get("window");
@@ -30,6 +30,10 @@ type PaymentCategory = {
 
 export default function PaymentScreen() {
     const router = useRouter();
+    const params = useLocalSearchParams();
+    // Tangkap Total yang benar (Pastikan parsing ke Integer)
+    const totalPaymentString = Array.isArray(params.totalAmount) ? params.totalAmount[0] : params.totalAmount;
+    const totalPayment = totalPaymentString ? parseInt(totalPaymentString) : 0;
 
     // Default accordion yang terbuka (Virtual Account)
     const [expandedSection, setExpandedSection] = useState<string | null>(
@@ -80,7 +84,6 @@ export default function PaymentScreen() {
         },
     ];
 
-    const totalPayment = 10000; // Contoh total bayar
 
     const formatRupiah = (number: number) => {
         return new Intl.NumberFormat("id-ID", {
@@ -114,8 +117,6 @@ export default function PaymentScreen() {
         // 3. Logika untuk Virtual Account (VA)
         // Cari URL gambar dari bank yang dipilih
         let selectedBankImage = "";
-
-        // Loop untuk menemukan gambar bank
         paymentMethods.forEach((category) => {
             const foundItem = category.data.find(
                 (item) => item.name === selectedMethod,
@@ -131,6 +132,9 @@ export default function PaymentScreen() {
             params: {
                 bankName: selectedMethod,
                 bankImage: selectedBankImage,
+                totalAmount: totalPayment, // <-- KIRIM HARGA INI
+                // Kirim juga data booking jika perlu diproses di halaman sukses
+                bookingData: params.bookingData 
             },
         });
     };
