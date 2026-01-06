@@ -8,11 +8,21 @@ export interface User {
 }
 
 export interface Spot {
-    id: string;
-    nama: string;
-    lokasi: string;
-    harga_per_jam: number;
-    image_url?: string;
+  id: number;
+  nama: string;           // Di DB: nama (bukan name)
+  lokasi: string;         // Di DB: lokasi (bukan address)
+  kota: string;
+  deskripsi: string;
+  harga_per_jam: number;  // Di DB: harga_per_jam (bukan price)
+  image_url: string;
+  fasilitas: string;
+  jam_buka: string;
+  jam_tutup: string;
+  jumlah_lapak: number;
+  
+  // Rating tidak ada di tabel tempat_mancing (harus di-join dari tabel reviews)
+  // Jadi kita kasih tanda tanya (?) agar tidak error jika kosong
+  rating?: number; 
 }
 
 export interface Booking {
@@ -30,12 +40,12 @@ export interface Booking {
 }
 
 export interface Product {
-    id: string;
-    nama: string;
-    harga_beli: number;
-    harga_sewa: number;
-    diskon?: number;
-    image_url?: string;
+  id: number;
+  nama: string;
+  harga_sewa?: number;
+  harga_beli?: number;
+  image_url: string;
+  kategori: string;
 }
 
 export interface Tip {

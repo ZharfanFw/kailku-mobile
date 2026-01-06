@@ -87,6 +87,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             setToken(newToken);
             setUser(newUser);
 
+            // LOGIKA REDIRECT DIPERBAIKI:
             if (redirectUrl) {
                 const url = redirectUrl;
                 const params = redirectParams;
@@ -96,10 +97,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                     params: params,
                 } as any);
             } else {
-                router.replace("/(tabs)/profile" as any);
+                // Default redirect jika login biasa (misal ke halaman Explore/Home)
+                router.replace("/(tabs)/explore" as any); 
             }
+            
+            // HAPUS BARIS INI (Ini penyebab bug, karena menimpa logika if/else di atas):
+            // router.replace("/"); 
 
-            router.replace("/");
         } catch (error) {
             throw error;
         } finally {

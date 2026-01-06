@@ -17,7 +17,8 @@ const jwt = require("@fastify/jwt");
 // A. CORS (Cross-Origin Resource Sharing)
 // Mengizinkan Frontend (Vue.js) mengakses Backend ini.
 fastify.register(require("@fastify/cors"), {
-    origin: ["http://localhost:3000", "http://10.0.2.2:3000"], // Izinkan semua origin (untuk development)
+    // origin: ["http://localhost:3000", "http://10.0.2.2:3000"], // Izinkan semua origin (untuk development)
+    origin: true, // Izinkan semua origin (untuk development)
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     credentials: true,
 });
