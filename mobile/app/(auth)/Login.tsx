@@ -60,6 +60,12 @@ export default function LoginScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
+            {/* Tombol Kembali */}
+                        <View style={styles.backHeader}>
+                            <TouchableOpacity onPress={() => router.push("/(tabs)")} style={styles.backButton}>
+                                <Ionicons name="arrow-back" size={24} color="#333" />
+                            </TouchableOpacity>
+                        </View>
             <KeyboardAvoidingView
                 behavior={Platform.OS === "ios" ? "padding" : "height"}
                 style={styles.content}
@@ -289,5 +295,16 @@ const styles = StyleSheet.create({
         color: "#103568",
         fontWeight: "bold",
         fontSize: 14,
+    },
+    backHeader: {
+        paddingHorizontal: 20,
+        paddingTop: 10,
+        backgroundColor: "#FFF",
+    },
+    backButton: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        justifyContent: "center",
     },
 });

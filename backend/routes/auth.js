@@ -169,25 +169,47 @@ async function authRoutes(fastify, options) {
             try {
                 connection = await fastify.mysql.getConnection();
 
-                // Mengambil kolom spesifik (termasuk first_name & last_name)
+                // 1. Ambil data profil dasar
                 const [rows] = await connection.query(
                     "SELECT id, username, first_name, last_name, full_name, email, phone, address, avatar_url FROM users WHERE id = ?",
                     [user_id],
                 );
 
-                connection.release();
-
                 if (rows.length === 0) {
+                    connection.release();
                     return reply
                         .status(404)
                         .send({ message: "User tidak ditemukan" });
                 }
 
-                return rows[0];
+                // 2. Hitung statistik Booking (Hanya yang tidak dibatalkan)
+                const [bookingCount] = await connection.query(
+                    "SELECT COUNT(*) as total FROM bookings WHERE user_id = ? AND status != 'cancelled'",
+                    [user_id]
+                );
+
+                // 3. Hitung statistik Review
+                const [reviewCount] = await connection.query(
+                    "SELECT COUNT(*) as total FROM reviews WHERE user_id = ?",
+                    [user_id]
+                );
+
+                connection.release();
+
+                // Gabungkan data user dengan objek statistik
+                const userData = rows[0];
+                return reply.send({
+                    ...userData,
+                    stats: {
+                        bookings: bookingCount[0].total,
+                        reviews: reviewCount[0].total
+                    }
+                });
+                
             } catch (err) {
                 if (connection) connection.release();
                 fastify.log.error(err);
-                reply.status(500).send(err);
+                reply.status(500).send({ message: "Gagal mengambil data profil" });
             }
         },
     );

@@ -15,6 +15,12 @@ export default function ProfileGuestScreen() {
     const router = useRouter();
     return (
         <SafeAreaView style={styles.container}>
+            {/* Tombol Kembali */}
+            <View style={styles.backHeader}>
+                <TouchableOpacity onPress={() => router.push("/(tabs)")} style={styles.backButton}>
+                    <Ionicons name="arrow-back" size={24} color="#333" />
+                </TouchableOpacity>
+            </View>
             <ScrollView
                 contentContainerStyle={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
@@ -161,4 +167,15 @@ const styles = StyleSheet.create({
         borderBottomColor: "#F0F0F0",
     },
     helpText: { flex: 1, marginLeft: 15, fontSize: 14, color: "#333" },
+    backHeader: {
+        paddingHorizontal: 20,
+        paddingTop: 10,
+        backgroundColor: "#FFF",
+    },
+    backButton: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        justifyContent: "center",
+    },
 });

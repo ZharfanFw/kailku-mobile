@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react"; // Tambah useCallback
 import {
   StyleSheet,
   Text,
@@ -13,13 +13,18 @@ import {
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { api } from "../../src/services/api";
-import { Spot } from "../../src/types"; // Import tipe yang sudah diperbaiki
+import { Spot } from "../../src/types"; 
+// TAMBAHKAN IMPORT INI
+import { useAuth } from "@/src/contexts/AuthContext"; 
 
 export default function InformationPlaceScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
+  
+  // Ambil status login dari Context
+  const { isAuthenticated } = useAuth(); 
 
-  const [spot, setSpot] = useState<Spot | null>(null); // Gunakan tipe Spot
+  const [spot, setSpot] = useState<Spot | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -28,14 +33,7 @@ export default function InformationPlaceScreen() {
       try {
         setLoading(true);
         const spotId = Array.isArray(id) ? id[0] : id;
-        
-        // Panggil API backend
         const response = await api.spots.getById(spotId);
-        
-        // Log untuk debug jika masih error, cek di terminal Metro
-        console.log("Data Detail Spot:", response); 
-
-        // Pastikan response adalah object data langsung
         setSpot(response); 
       } catch (error) {
         console.error("Error fetching spot:", error);
@@ -56,6 +54,41 @@ export default function InformationPlaceScreen() {
       minimumFractionDigits: 0,
     }).format(number);
   };
+  
+  // --- FUNGSI PROTEKSI BOOKING ---
+  const handleBookingPress = useCallback(() => {
+    if (!isAuthenticated) {
+      Alert.alert(
+        "Login Diperlukan",
+        "Silakan masuk ke akun Anda terlebih dahulu.",
+        [
+          { text: "Nanti Saja", style: "cancel" },
+          { 
+            text: "Login Sekarang", 
+            onPress: () => router.push({
+                pathname: "/(auth)/Login",
+                // Pastikan key parameter di sini SAMA dengan yang dibaca di Login.tsx
+                params: { 
+                  returnTo: "/(booking)/InformationPlace", 
+                  spotId: id, // Gunakan spotId agar sinkron dengan Login.tsx
+                  price: spot?.harga_per_jam 
+                }
+            }) 
+          }
+        ]
+      );
+    } else {
+      // Navigasi langsung jika sudah login
+      router.push({
+        pathname: "/(booking)/Booking",
+        params: {
+          spotId: spot?.id,
+          spotName: spot?.nama,
+          price: spot?.harga_per_jam,
+        },
+      });
+    }
+  }, [isAuthenticated, spot, id]);
 
   if (loading) {
     return (
@@ -76,7 +109,6 @@ export default function InformationPlaceScreen() {
         <View style={styles.imageContainer}>
           <Image
             source={{
-              // Fallback jika image_url null
               uri: spot.image_url && spot.image_url.startsWith("http")
                 ? spot.image_url
                 : `https://placehold.co/600x400/103568/FFF?text=${spot.nama}`,
@@ -89,7 +121,6 @@ export default function InformationPlaceScreen() {
           </TouchableOpacity>
 
           <View style={styles.titleContainer}>
-            {/* PERBAIKAN: Gunakan spot.nama */}
             <Text style={styles.placeTitle}>{spot.nama}</Text> 
             <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4 }}>
               <Ionicons name="star" size={16} color="#FFD700" />
@@ -105,11 +136,7 @@ export default function InformationPlaceScreen() {
           <View style={styles.locationCard}>
             <View style={styles.locationTextContainer}>
               <Text style={styles.cardHeader}>Lokasi Pemancingan</Text>
-              
-              {/* PERBAIKAN: Gunakan spot.lokasi */}
               <Text style={styles.addressText}>{spot.lokasi}</Text>
-              
-              {/* PERBAIKAN: Gunakan spot.deskripsi */}
               {spot.deskripsi && (
                 <Text style={[styles.addressText, { marginTop: 8, fontStyle: "italic" }]}>
                   {spot.deskripsi}
@@ -124,7 +151,6 @@ export default function InformationPlaceScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* FASILITAS (Opsional, tampilkan jika ada) */}
           {spot.fasilitas && (
              <View style={[styles.locationCard, { flexDirection: 'column', alignItems: 'flex-start' }]}>
                 <Text style={styles.cardHeader}>Fasilitas</Text>
@@ -138,30 +164,24 @@ export default function InformationPlaceScreen() {
       <View style={styles.footer}>
         <View>
           <Text style={styles.priceLabel}>Biaya per-Jam</Text>
-          {/* PERBAIKAN: Gunakan spot.harga_per_jam */}
           <Text style={styles.priceValue}>{formatRupiah(spot.harga_per_jam)}</Text>
         </View>
+        
+        {/* GUNAKAN FUNGSI HANDLER DI SINI */}
         <TouchableOpacity
           style={styles.bookButton}
-          onPress={() => {
-            router.push({
-              pathname: "/(booking)/Booking",
-              params: {
-                spotId: spot.id,
-                spotName: spot.nama, // Fix
-                price: spot.harga_per_jam, // Fix
-              },
-            });
-          }}
+          onPress={handleBookingPress}
         >
-          <Text style={styles.bookButtonText}>Booking Now</Text>
+          <Text style={styles.bookButtonText}>
+            {isAuthenticated ? "Booking Now" : "Login to Book"}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 }
 
-// Gunakan styles yang sama seperti sebelumnya (tidak perlu diubah)
+// Styles tetap sama...
 const styles = StyleSheet.create({
     loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#F8F8F8" },
     container: { flex: 1, backgroundColor: "#F8F8F8" },

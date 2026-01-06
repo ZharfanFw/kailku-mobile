@@ -23,6 +23,16 @@ export default function BookingScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const { isAuthenticated } = useAuth(); // Ambil status login
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      // Jika masuk ke file ini tapi belum login, langsung balikkan ke InformationPlace
+      // atau ke ProfileGuest
+      router.replace("/ProfileGuest"); 
+    }
+  }, [isAuthenticated]);
+
+  if (!isAuthenticated) return null; // Jangan render apapun jika belum login
   
   // Tangkap data dari navigasi sebelumnya (InformationPlace)
   const spotIdParam = Array.isArray(params.spotId) ? params.spotId[0] : params.spotId;

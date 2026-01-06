@@ -16,8 +16,15 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/src/contexts/AuthContext";
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function ProfileScreen() {
+  useFocusEffect(
+  React.useCallback(() => {
+    // Panggil fungsi API untuk refresh data user (termasuk stats)
+    // misal: refreshUserData();
+  }, [])
+);
   const router = useRouter();
   const insets = useSafeAreaInsets();
   
@@ -86,10 +93,7 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
-        contentContainerStyle={[
-          styles.scrollContent,
-          { paddingBottom: insets.bottom + 20 },
-        ]}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 20 }]}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
@@ -125,22 +129,23 @@ export default function ProfileScreen() {
           </Text>
         </View>
 
-        {/* STATS CARD */}
+        {/* STATS CARD - Sekarang Menggunakan Data Dinamis */}
         <View style={styles.statsCard}>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>0</Text>
+          <TouchableOpacity 
+            style={styles.statItem} 
+            onPress={() => router.push("/(tabs)/notifications")}
+          >
+            {/* Ambil dari user.stats (sesuai API backend baru) */}
+            <Text style={styles.statValue}>{user.stats?.bookings || 0}</Text>
             <Text style={styles.statLabel}>Booking</Text>
-          </View>
-          <View
-            style={[
-              styles.statDivider,
-              { backgroundColor: "#E5E5E5" },
-            ]}
-          />
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>0</Text>
+          </TouchableOpacity>
+          
+          <View style={[styles.statDivider, { backgroundColor: "#E5E5E5" }]} />
+          
+          <TouchableOpacity style={styles.statItem}>
+            <Text style={styles.statValue}>{user.stats?.reviews || 0}</Text>
             <Text style={styles.statLabel}>Review</Text>
-          </View>
+          </TouchableOpacity>
         </View>
 
         <Text style={styles.sectionTitle}>Akun</Text>
@@ -236,6 +241,7 @@ export default function ProfileScreen() {
       </ScrollView>
     </SafeAreaView>
   );
+  
 }
 
 const styles = StyleSheet.create({

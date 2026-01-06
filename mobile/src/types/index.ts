@@ -10,6 +10,10 @@ export interface User {
   address?: string;
   first_name?: string;
   last_name?: string;
+  stats?: {
+    bookings: number;
+    reviews: number;
+  };
 }
 
 export interface Spot {
