@@ -4,6 +4,10 @@
 // Memuat variabel rahasia dari file .env ke dalam process.env
 // Wajib paling atas agar konfigurasi terbaca sebelum kode lain jalan.
 require("dotenv").config();
+const path = require("path"); // Tambahkan ini
+
+
+
 
 // 2. INISIALISASI FRAMEWORK
 // Membuat instance aplikasi Fastify dengan logger aktif.
@@ -97,6 +101,13 @@ const start = async () => {
         process.exit(1);
     }
 };
+
+// TAMBAHKAN INI: Register Static File Serving
+// Ini membuat url http://ip:3000/public/uploads/nama.jpg bisa diakses
+fastify.register(require("@fastify/static"), {
+  root: path.join(__dirname, "public"),
+  prefix: "/public/", 
+});
 
 
 

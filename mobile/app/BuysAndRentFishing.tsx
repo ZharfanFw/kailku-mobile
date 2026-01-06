@@ -17,14 +17,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { api } from "../src/services/api";
 import { Tool } from "../src/types";
 
-// Pastikan IP ini sama dengan di config/api.ts
+// Pastikan IP ini benar (10.0.2.2 untuk Emulator Android)
 const API_BASE_URL = "http://10.0.2.2:3000"; 
 
 const { width } = Dimensions.get("window");
 const COLUMN_COUNT = 2;
 const CARD_WIDTH = (width - 48) / COLUMN_COUNT;
 
-// Interface Cart Item
 interface CartItem extends Tool {
   type: "sewa" | "beli";
   transaksi_price: number;
@@ -61,11 +60,22 @@ export default function BuysAndRentFishingScreen() {
     fetchTools();
   }, []);
 
-  // PERBAIKAN 1: Filter menggunakan 'p.nama' (bukan p.nama_alat)
-  // Tambahkan pengecekan `p.nama` agar tidak error jika data null
-  const filteredProducts = products.filter((p) =>
-    p.nama && p.nama.toLowerCase().includes(searchText.toLowerCase())
-  );
+  // --- LOGIKA HELPER GAMBAR SEPERTI VUE ---
+  const getImageUrl = (imageName?: string) => {
+    // 1. Jika nama file kosong/null
+    if (!imageName) {
+        return "https://via.placeholder.com/150?text=No+Image";
+    }
+
+    // 2. Jika sudah berupa link lengkap (http...)
+    if (imageName.startsWith("http")) {
+        return imageName;
+    }
+
+    // 3. Jika hanya nama file (misal: "joran.avif"), gabungkan dengan URL server
+    // Pastikan di folder backend Anda strukturnya: backend/public/uploads/joran.avif
+    return `${API_BASE_URL}/public/uploads/${imageName}`;
+  };
 
   const formatRupiah = (number: number) => {
     return new Intl.NumberFormat("id-ID", {
@@ -75,12 +85,7 @@ export default function BuysAndRentFishingScreen() {
     }).format(number);
   };
 
-  const getImageUrl = (url?: string) => {
-      if (!url) return "https://placehold.co/150x150/EEE/333?text=No+Image";
-      if (url.startsWith("http")) return url;
-      return `${API_BASE_URL}/public/uploads/${url}`;
-  }
-
+  // --- CART LOGIC ---
   const addToCart = (item: Tool, type: "sewa" | "beli") => {
     const price = type === "sewa" ? item.harga_sewa : item.harga_beli;
     const newItem: CartItem = { ...item, type, transaksi_price: price };
@@ -157,14 +162,13 @@ export default function BuysAndRentFishingScreen() {
     return (
       <View style={styles.card}>
         <Image
-          // PERBAIKAN 2: Gunakan 'item.image_url' (bukan foto_url)
+          // PANGGIL HELPER DI SINI
           source={{ uri: getImageUrl(item.image_url) }}
           style={styles.productImage}
           resizeMode="contain"
         />
 
         <View style={styles.cardContent}>
-          {/* PERBAIKAN 3: Gunakan 'item.nama' (bukan nama_alat) */}
           <Text style={styles.productName} numberOfLines={1}>
             {item.nama}
           </Text>
@@ -215,7 +219,8 @@ export default function BuysAndRentFishingScreen() {
         <ActivityIndicator size="large" color="#103568" style={{ marginTop: 50 }} />
       ) : (
         <FlatList
-          data={filteredProducts}
+          // Safe filtering: pastikan p.nama tidak null sebelum di-lowercase
+          data={products.filter(p => p.nama && p.nama.toLowerCase().includes(searchText.toLowerCase()))}
           renderItem={renderItem}
           keyExtractor={(item) => item.id.toString()}
           numColumns={2}
@@ -251,6 +256,7 @@ export default function BuysAndRentFishingScreen() {
   );
 }
 
+// ... Styles SAMA SEPERTI SEBELUMNYA ...
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#FAFAFA" },
   header: { flexDirection: "row", alignItems: "center", paddingHorizontal: 20, paddingVertical: 15, backgroundColor: "#FFF" },

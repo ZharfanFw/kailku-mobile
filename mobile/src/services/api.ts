@@ -2,6 +2,8 @@ import { apiClient } from "../config/api";
 import { Spot, Product } from "../types";
 
 export const api = {
+
+    
     get: async <T>(endpoint: string, params?: object): Promise<T> => {
         const response = await apiClient.get<T>(endpoint, { params });
         return response.data;
@@ -43,7 +45,7 @@ export const api = {
         logout: async () => {
             return await api.post("/auth/logout", {});
         },
-        
+
         updateProfile: async (data: {
             username?: string;
             first_name?: string;
@@ -76,30 +78,26 @@ export const api = {
     },
 
     bookings: {
-        create: async (data: {
-            tempat_id: string;
-            tanggal_booking: string;
-            no_kursi: number;
-            start_time: string;
-            duration: number;
-        }) => {
-            return await api.post("/bookings", data);
-        },
-
-        myBookings: async () => {
-            return await api.get<any[]>("/bookings/my");
-        },
-
+        // UPDATE: Fungsi Check Seats
         checkSeats: async (tempat_id: string, tanggal: string) => {
             return await api.get<{ bookedSeats: number[] }>(
                 "/bookings/check-seats",
-                { tempat_id, tanggal },
+                { tempat_id, tanggal }
             );
+        },
+        // BARU: Fungsi Create Booking
+        create: async (data: any) => {
+            return await api.post("/bookings", data);
+        },
+        myBookings: async () => {
+            return await api.get<any[]>("/bookings/my");
         },
     },
 
     products: {
+        // UPDATE: Terima parameter tempat_id
         getAll: async (tempat_id?: string) => {
+            // Kirim query params ke backend
             return await api.get<any[]>("/alat_pancing", { tempat_id });
         },
     },

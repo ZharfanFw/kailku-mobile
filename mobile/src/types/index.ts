@@ -65,11 +65,11 @@ export interface Event {
 
 export interface Tool {
   id: number;
-  nama: string;           // DB: nama (SEBELUMNYA: nama_alat)
+  nama: string;           // DB: nama
   deskripsi?: string;
-  harga_sewa: number;
-  harga_beli: number;
+  harga_sewa: number;     // DB: harga_sewa
+  harga_beli: number;     // DB: harga_beli
   stok: number;
-  image_url?: string;     // DB: image_url (SEBELUMNYA: foto_url)
+  image_url?: string;     // DB: image_url
   kategori?: string;
 }
