@@ -30,11 +30,10 @@ type PaymentCategory = {
 
 export default function PaymentScreen() {
     const router = useRouter();
-
-    // Tangkap parameter totalAmount dari Booking.tsx
-  const params = useLocalSearchParams();
-  const totalPaymentString = Array.isArray(params.totalAmount) ? params.totalAmount[0] : params.totalAmount;
-  const totalPayment = totalPaymentString ? parseInt(totalPaymentString) : 0;
+    const params = useLocalSearchParams();
+    // Tangkap Total yang benar (Pastikan parsing ke Integer)
+    const totalPaymentString = Array.isArray(params.totalAmount) ? params.totalAmount[0] : params.totalAmount;
+    const totalPayment = totalPaymentString ? parseInt(totalPaymentString) : 0;
 
     // Default accordion yang terbuka (Virtual Account)
     const [expandedSection, setExpandedSection] = useState<string | null>(

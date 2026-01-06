@@ -13,7 +13,8 @@ import {
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { api } from "../../src/services/api"; // Pastikan import API benar
+import { api } from "../../src/services/api";
+import { useAuth } from "@/src/contexts/AuthContext";
 
 const { width, height } = Dimensions.get("window");
 const SEAT_SIZE = 35;
@@ -22,11 +23,11 @@ const SEAT_SIZE = 35;
 export default function BookingScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const { isAuthenticated } = useAuth(); // Ambil status login
   
   // Tangkap data dari navigasi sebelumnya (InformationPlace)
   const spotIdParam = Array.isArray(params.spotId) ? params.spotId[0] : params.spotId;
   const priceParam = Array.isArray(params.price) ? params.price[0] : params.price;
-  
   const [spotId, setSpotId] = useState<string>(spotIdParam || "");
   const [pricePerHour, setPricePerHour] = useState<number>(priceParam ? parseInt(priceParam) : 25000);
 
@@ -123,30 +124,56 @@ export default function BookingScreen() {
   const totalPrice = pricePerHour * duration * selectedSeats.length;
 
   const handleProceed = () => {
-    // Validasi data minimal
+    // 1. Validasi Input
     if (selectedSeats.length === 0 || time === "--Pilih Jam--") {
+        Alert.alert("Peringatan", "Pilih jam dan kursi terlebih dahulu.");
         return;
     }
 
-    // Bungkus data booking untuk dikirim ke halaman berikutnya
+    // 2. Cek Login
+    if (!isAuthenticated) {
+        Alert.alert(
+            "Login Diperlukan",
+            "Anda harus login untuk melanjutkan pembayaran.",
+            [
+                { text: "Batal", style: "cancel" },
+                { 
+                    text: "Login Sekarang", 
+                    onPress: () => {
+                        // Redirect ke Login dengan membawa 'returnTo' dan data booking saat ini
+                        router.push({
+                            pathname: "/(auth)/Login",
+                            params: { 
+                                returnTo: "/(booking)/Booking",
+                                // Kita kirim balik ID spot agar halaman booking merender tempat yang sama
+                                spotId: spotId,
+                                price: pricePerHour.toString()
+                            }
+                        });
+                    }
+                }
+            ]
+        );
+        return;
+    }
+
+    // 3. Jika Sudah Login, Lanjut ke Sewa Alat
     const bookingPayload = {
         spotId,
-        date: date, // Format UI
-        apiDate: apiDate, // Format API (YYYY-MM-DD)
+        date: apiDate,
         time,
         duration,
         seats: selectedSeats,
         spotPriceTotal: totalPrice, // Harga total tiket mancing
     };
 
-    // Navigasi ke Halaman Sewa Alat dengan membawa data booking
     router.push({
         pathname: "/BuysAndRentFishing",
         params: {
-            bookingData: JSON.stringify(bookingPayload) // Kirim sebagai string JSON
+            bookingData: JSON.stringify(bookingPayload)
         }
     });
-};
+  };
 
   const renderSeat = (id: number) => {
     const isSelected = selectedSeats.includes(id);
@@ -200,7 +227,7 @@ export default function BookingScreen() {
       title = "Pilih Durasi";
       onSelect = (val) => setDuration(val);
     }
-
+<SafeAreaView style={styles.container}></SafeAreaView>
     return (
       <Modal
         animationType="slide"
@@ -328,7 +355,10 @@ export default function BookingScreen() {
           disabled={selectedSeats.length === 0 || time === "--Pilih Jam--"}
           onPress={handleProceed}
         >
-          <Text style={styles.checkoutButtonText}>Lanjut Bayar</Text>
+          {/* Ubah text tombol agar user paham */}
+          <Text style={styles.checkoutButtonText}>
+             {isAuthenticated ? "Lanjut Sewa Alat" : "Login untuk Pesan"}
+          </Text>
         </TouchableOpacity>
       </View>
 

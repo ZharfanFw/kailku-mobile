@@ -21,7 +21,7 @@ export default function ProfileScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   
-  // State untuk Toggle UI (Hanya visual sementara)
+  // State untuk Toggle UI (Visual saja untuk saat ini)
   const [darkMode, setDarkMode] = useState(false);
   const [notifications, setNotifications] = useState(true);
 
@@ -30,7 +30,7 @@ export default function ProfileScreen() {
 
   // EFEK PENTING: Pantau status login
   useEffect(() => {
-    // Jika user tiba-tiba tidak terautentikasi (misal token expired atau logout sukses)
+    // Jika user tiba-tiba tidak terautentikasi (misal setelah logout sukses)
     if (!isAuthenticated) {
         // Redirect ke login agar tidak stuck di halaman profil
         router.replace("/(auth)/Login");
@@ -46,11 +46,10 @@ export default function ProfileScreen() {
         style: "destructive",
         onPress: async () => {
           try {
-              // 1. Jalankan proses logout (hapus storage & state di context)
+              // 1. Panggil fungsi logout dari context
               await logout();
               
-              // 2. Navigasi manual ke Login sebagai backup 
-              // (berjaga-jaga jika useEffect lambat merespon perubahan state)
+              // 2. Navigasi manual sebagai backup jika useEffect telat merespon
               router.replace("/(auth)/Login"); 
           } catch (error) {
               console.error("Gagal logout:", error);
@@ -66,8 +65,8 @@ export default function ProfileScreen() {
       router.push("/edit-profile"); 
   };
 
+  // Jika user belum login, tampilkan fallback UI
   if (!isAuthenticated || !user) {
-    // Tampilan jika user belum login (Fallback UI)
     return (
         <SafeAreaView style={styles.container}>
              <View style={[styles.scrollContent, { alignItems: 'center', justifyContent: 'center', flex: 1 }]}>

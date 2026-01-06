@@ -1,31 +1,28 @@
 export interface User {
-    id: number;
-    username: string;
-    email: string;
-    full_name: string;
-    first_name?: string;
-    last_name?: string;
-    phone?: string;
-    address?: string;
-    avatar_url?: string;
+  id: number;
+  username: string;
+  email: string;
+  full_name?: string;
+  avatar_url?: string | null;
+  phone?: string;
+  address?: string;
+  first_name?: string;
+  last_name?: string;
 }
 
+// PERBAIKAN DI SINI SESUAI DATABASE
 export interface Spot {
   id: number;
-  nama: string;           // Di DB: nama (bukan name)
-  lokasi: string;         // Di DB: lokasi (bukan address)
-  kota: string;
-  deskripsi: string;
-  harga_per_jam: number;  // Di DB: harga_per_jam (bukan price)
-  image_url: string;
-  fasilitas: string;
-  jam_buka: string;
-  jam_tutup: string;
-  jumlah_lapak: number;
-  
-  // Rating tidak ada di tabel tempat_mancing (harus di-join dari tabel reviews)
-  // Jadi kita kasih tanda tanya (?) agar tidak error jika kosong
-  rating?: number; 
+  nama: string;           // DB: nama (bukan name)
+  lokasi: string;         // DB: lokasi (bukan address)
+  kota?: string;          // DB: kota
+  deskripsi?: string;     // DB: deskripsi
+  harga_per_jam: number;  // DB: harga_per_jam (bukan price)
+  image_url?: string;     // DB: image_url
+  fasilitas?: string;     // DB: fasilitas
+  jam_buka?: string;      // DB: jam_buka
+  jam_tutup?: string;     // DB: jam_tutup
+  rating?: number;        // (Opsional, jika backend melakukan join ke tabel reviews)
 }
 
 export interface Booking {
@@ -64,4 +61,15 @@ export interface Event {
     tanggal: string;
     total_hadiah: number;
     gambar?: string;
+}
+
+export interface Tool {
+  id: number;
+  nama_alat: string;
+  deskripsi?: string;
+  harga_sewa: number;
+  harga_beli: number;
+  stok: number;
+  foto_url?: string;
+  kategori?: string;
 }
