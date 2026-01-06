@@ -1,5 +1,3 @@
-// mobile/app/BuysAndRentFishing.tsx
-
 import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
@@ -17,7 +15,7 @@ import {
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { api } from "../src/services/api";
-import { Tool } from "../src/types"; // Pastikan ini tidak merah lagi
+import { Tool } from "../src/types";
 
 // Pastikan IP ini sama dengan di config/api.ts
 const API_BASE_URL = "http://10.0.2.2:3000"; 
@@ -26,7 +24,7 @@ const { width } = Dimensions.get("window");
 const COLUMN_COUNT = 2;
 const CARD_WIDTH = (width - 48) / COLUMN_COUNT;
 
-// CartItem mewarisi Tool, jadi otomatis punya 'id', 'nama_alat', dll
+// Interface Cart Item
 interface CartItem extends Tool {
   type: "sewa" | "beli";
   transaksi_price: number;
@@ -42,7 +40,6 @@ export default function BuysAndRentFishingScreen() {
   const [bookingData, setBookingData] = useState<any>(null);
 
   useEffect(() => {
-    // 1. Ambil Data Booking
     if (params.bookingData) {
       try {
         setBookingData(JSON.parse(params.bookingData as string));
@@ -51,7 +48,6 @@ export default function BuysAndRentFishingScreen() {
       }
     }
 
-    // 2. Fetch Alat
     const fetchTools = async () => {
       try {
         const data = await api.products.getAll();
@@ -64,6 +60,12 @@ export default function BuysAndRentFishingScreen() {
     };
     fetchTools();
   }, []);
+
+  // PERBAIKAN 1: Filter menggunakan 'p.nama' (bukan p.nama_alat)
+  // Tambahkan pengecekan `p.nama` agar tidak error jika data null
+  const filteredProducts = products.filter((p) =>
+    p.nama && p.nama.toLowerCase().includes(searchText.toLowerCase())
+  );
 
   const formatRupiah = (number: number) => {
     return new Intl.NumberFormat("id-ID", {
@@ -79,7 +81,6 @@ export default function BuysAndRentFishingScreen() {
       return `${API_BASE_URL}/public/uploads/${url}`;
   }
 
-  // --- CART LOGIC ---
   const addToCart = (item: Tool, type: "sewa" | "beli") => {
     const price = type === "sewa" ? item.harga_sewa : item.harga_beli;
     const newItem: CartItem = { ...item, type, transaksi_price: price };
@@ -87,7 +88,6 @@ export default function BuysAndRentFishingScreen() {
   };
 
   const removeFromCart = (itemId: number, type: "sewa" | "beli") => {
-    // Error c.id harusnya hilang karena Tool sekarang punya id: number
     const index = cart.findIndex((c) => c.id === itemId && c.type === type);
     if (index > -1) {
       const newCart = [...cart];
@@ -97,7 +97,6 @@ export default function BuysAndRentFishingScreen() {
   };
 
   const getItemCount = (itemId: number, type: "sewa" | "beli") => {
-    // Error c.id harusnya hilang
     return cart.filter((c) => c.id === itemId && c.type === type).length;
   };
 
@@ -158,14 +157,16 @@ export default function BuysAndRentFishingScreen() {
     return (
       <View style={styles.card}>
         <Image
-          source={{ uri: getImageUrl(item.foto_url) }}
+          // PERBAIKAN 2: Gunakan 'item.image_url' (bukan foto_url)
+          source={{ uri: getImageUrl(item.image_url) }}
           style={styles.productImage}
           resizeMode="contain"
         />
 
         <View style={styles.cardContent}>
+          {/* PERBAIKAN 3: Gunakan 'item.nama' (bukan nama_alat) */}
           <Text style={styles.productName} numberOfLines={1}>
-            {item.nama_alat}
+            {item.nama}
           </Text>
           
           <Text style={styles.productPrice}>{formatRupiah(item.harga_beli)} (Beli)</Text>
@@ -210,18 +211,22 @@ export default function BuysAndRentFishingScreen() {
         </View>
       </View>
 
-      <FlatList
-        data={products.filter(p => p.nama_alat.toLowerCase().includes(searchText.toLowerCase()))}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
-        numColumns={2}
-        columnWrapperStyle={styles.columnWrapper}
-        contentContainerStyle={[styles.listContent, { paddingBottom: 150 }]}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
+      {loading ? (
+        <ActivityIndicator size="large" color="#103568" style={{ marginTop: 50 }} />
+      ) : (
+        <FlatList
+          data={filteredProducts}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id.toString()}
+          numColumns={2}
+          columnWrapperStyle={styles.columnWrapper}
+          contentContainerStyle={[styles.listContent, { paddingBottom: 150 }]}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
             <Text style={{textAlign: 'center', marginTop: 20}}>Tidak ada data alat pancing.</Text>
-        }
-      />
+          }
+        />
+      )}
 
       <View style={styles.footerCard}>
         <View style={styles.totalRow}>

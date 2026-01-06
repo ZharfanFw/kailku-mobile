@@ -95,7 +95,7 @@ export default function HomeScreen() {
         <View style={styles.headerContainer}>
           {/* Gambar Lokal Asset */}
           <Image
-            source={require("../../assets/images/tempat-pemancingan/tempat1.avif")}
+            // source={require("../../../backend/public/uploads/tempat1.avif")}
             style={styles.headerImage}
           />
         </View>
