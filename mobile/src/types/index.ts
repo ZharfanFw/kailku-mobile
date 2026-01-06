@@ -12,17 +12,13 @@ export interface User {
 
 // PERBAIKAN DI SINI SESUAI DATABASE
 export interface Spot {
-  id: number;
-  nama: string;           // DB: nama (bukan name)
-  lokasi: string;         // DB: lokasi (bukan address)
-  kota?: string;          // DB: kota
-  deskripsi?: string;     // DB: deskripsi
-  harga_per_jam: number;  // DB: harga_per_jam (bukan price)
-  image_url?: string;     // DB: image_url
-  fasilitas?: string;     // DB: fasilitas
-  jam_buka?: string;      // DB: jam_buka
-  jam_tutup?: string;     // DB: jam_tutup
-  rating?: number;        // (Opsional, jika backend melakukan join ke tabel reviews)
+    id: string;
+    nama: string;
+    lokasi: string;
+    harga_per_jam: number;
+    image_url?: string;
+    rating?: number;
+    description?: string;
 }
 
 export interface Booking {

@@ -1,61 +1,88 @@
 import React, { useEffect, useState } from "react";
 import {
-  StyleSheet,
-  Text,
-  View,
-  Image,
-  ScrollView,
-  TouchableOpacity,
-  ActivityIndicator,
-  Alert,
-  StatusBar,
+    StyleSheet,
+    Text,
+    View,
+    Image,
+    ScrollView,
+    TouchableOpacity,
+    StatusBar,
+    ActivityIndicator,
+    Alert,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { api } from "../../src/services/api";
-import { Spot } from "../../src/types"; // Import tipe yang sudah diperbaiki
+
+interface SpotDetail {
+    id: string;
+    name: string;
+    location: string;
+    description: string;
+    price: number;
+    image_url?: string;
+    rating?: number;
+}
 
 export default function InformationPlaceScreen() {
-  const router = useRouter();
-  const { id } = useLocalSearchParams();
+    const router = useRouter();
+    const { id } = useLocalSearchParams();
 
-  const [spot, setSpot] = useState<Spot | null>(null); // Gunakan tipe Spot
-  const [loading, setLoading] = useState(true);
+    const [spot, setSpot] = useState<SpotDetail | null>(null);
+    const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchSpotDetail = async () => {
-      if (!id) return;
-      try {
-        setLoading(true);
-        const spotId = Array.isArray(id) ? id[0] : id;
-        
-        // Panggil API backend
-        const response = await api.spots.getById(spotId);
-        
-        // Log untuk debug jika masih error, cek di terminal Metro
-        console.log("Data Detail Spot:", response); 
+    useEffect(() => {
+        const fetchSpotDetail = async () => {
+            if (!id) return;
 
-        // Pastikan response adalah object data langsung
-        setSpot(response); 
-      } catch (error) {
-        console.error("Error fetching spot:", error);
-        Alert.alert("Gagal Memuat", "Tidak dapat mengambil detail tempat mancing.");
-        router.back();
-      } finally {
-        setLoading(false);
-      }
+            try {
+                setLoading(true);
+                const spotId = Array.isArray(id) ? id[0] : id;
+                const spotData = await api.spots.getById(spotId);
+
+                const spotDetail: SpotDetail = {
+                    id: spotData.id,
+                    name: spotData.nama,
+                    location: spotData.lokasi,
+                    description: spotData.description || "",
+                    price: spotData.harga_per_jam,
+                    image_url: spotData.image_url,
+                    rating: spotData.rating,
+                };
+
+                setSpot(spotDetail);
+            } catch (error) {
+                console.error("Error fetching spot:", error);
+                Alert.alert(
+                    "Gagal Memuat",
+                    "Tidak dapat mengambil detail tempat mancing.",
+                );
+                router.back();
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchSpotDetail();
+    }, [id]);
+
+    const formatRupiah = (number: number) => {
+        return new Intl.NumberFormat("id-ID", {
+            style: "currency",
+            currency: "IDR",
+            minimumFractionDigits: 0,
+        }).format(number);
     };
 
-    fetchSpotDetail();
-  }, [id]);
+    if (loading) {
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#103568" />
+            </View>
+        );
+    }
 
-  const formatRupiah = (number: number) => {
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      minimumFractionDigits: 0,
-    }).format(number);
-  };
+    if (!spot) return null;
 
   if (loading) {
     return (
@@ -155,7 +182,9 @@ export default function InformationPlaceScreen() {
           }}
         >
           <Text style={styles.bookButtonText}>Booking Now</Text>
-        </TouchableOpacity>
+        </TouchableOp49
+ 
+acity>
       </View>
     </View>
   );

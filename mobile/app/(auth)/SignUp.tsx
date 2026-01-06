@@ -22,7 +22,7 @@ export default function SignUpScreen() {
   const [isLoading, setIsLoading] = useState(false);
 
   const [formData, setFormData] = useState({
-    username: "",
+    username: "",aowka
     firstName: "",
     lastName: "",
     email: "",
@@ -230,70 +230,61 @@ export default function SignUpScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FFFFFF" },
-  scrollContainer: {
-    flexGrow: 1,
-    justifyContent: "center",
-    padding: 20,
-    paddingTop: 40,
-  },
-  avatarContainer: { alignItems: "center", marginBottom: 30 },
-  avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: "#DCEAF7",
-    marginBottom: 10,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#103568",
-  },
-  formContainer: { width: "100%" },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
-    marginBottom: 15,
-  },
-  halfInputContainer: { width: "48%" },
-  input: {
-    backgroundColor: "#F0F0F0",
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    fontSize: 14,
-    color: "#333",
-    width: "100%",
-    marginBottom: 15,
-    borderWidth: 1,
-    borderColor: "#E5E5E5",
-  },
-  button: {
-    backgroundColor: "#103568",
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: "center",
-    marginTop: 10,
-    shadowColor: "#103568",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 6,
-  },
-  buttonDisabled: {
-    backgroundColor: "#999",
-    elevation: 0,
-  },
-  buttonText: { color: "#FFFFFF", fontSize: 16, fontWeight: "bold" },
-  loginLink: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginTop: 20,
-  },
-  loginText: {
-    color: "#666",
-    fontSize: 14,
-  },
+    container: { flex: 1, backgroundColor: "#FFFFFF" },
+    scrollContainer: {
+        flexGrow: 1,
+        justifyContent: "center",
+        padding: 24,
+        paddingTop: 40,
+    },
+    avatarContainer: { alignItems: "center", marginBottom: 30 },
+    avatar: {
+        width: 140,
+        height: 140,
+        borderRadius: 70,
+        backgroundColor: "#DCEAF7",
+    },
+    formContainer: { width: "100%", gap: 16 },
+    row: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        width: "100%",
+        marginBottom: 16,
+    },
+    halfInputContainer: { width: "48%" },
+    input: {
+        backgroundColor: "#F0F0F0",
+        paddingVertical: 15,
+        paddingHorizontal: 20,
+        borderRadius: 25,
+        fontSize: 14,
+        color: "#333",
+        width: "100%",
+        marginBottom: 16,
+    },
+    button: {
+        backgroundColor: "#103568",
+        paddingVertical: 16,
+        borderRadius: 25,
+        alignItems: "center",
+        marginTop: 20,
+        shadowColor: "#103568",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 5,
+        elevation: 6,
+    },
+    buttonDisabled: {
+        backgroundColor: "#999",
+        elevation: 0,
+    },
+    buttonText: { color: "#FFFFFF", fontSize: 16, fontWeight: "bold" },
+    loginLink: {
+        flexDirection: "row",
+        justifyContent: "center",
+        marginTop: 20,
+    },
+    loginText: {
+        color: "#666",
+    },
 });
