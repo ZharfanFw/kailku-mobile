@@ -1,16 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
-    StyleSheet,
-    Text,
-    View,
-    SafeAreaView,
-    TextInput,
-    TouchableOpacity,
-    FlatList,
-    Image,
-    Dimensions,
+  StyleSheet,
+  Text,
+  View,
+  SafeAreaView,
+  TextInput,
+  TouchableOpacity,
+  FlatList,
+  Image,
+  Dimensions,
+  Alert
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 
 const { width } = Dimensions.get("window");
@@ -33,10 +34,23 @@ interface CartItem extends Product {
 
 export default function BuysAndRentFishingScreen() {
     const router = useRouter();
+    const params = useLocalSearchParams();
     const [searchText, setSearchText] = useState("");
+    const [cart, setCart] = useState<any[]>([]);
 
-    // State Keranjang
-    const [cart, setCart] = useState<CartItem[]>([]);
+    // Ambil data booking dari halaman sebelumnya
+  const [bookingData, setBookingData] = useState<any>(null);
+
+  useEffect(() => {
+      if (params.bookingData) {
+          try {
+              const parsed = JSON.parse(params.bookingData as string);
+              setBookingData(parsed);
+          } catch (e) {
+              console.error("Gagal parse booking data", e);
+          }
+      }
+  }, [params.bookingData]);
 
     // Dummy Data
     const products: Product[] = [
@@ -162,6 +176,32 @@ export default function BuysAndRentFishingScreen() {
         );
     };
 
+    // Hitung Total Harga (Alat + Sewa + Booking Spot)
+  const cartTotal = cart.reduce((total, item) => total + item.price, 0);
+  const spotTotal = bookingData ? bookingData.spotPriceTotal : 0;
+  const grandTotal = cartTotal + spotTotal;
+
+  const handleCheckout = () => {
+      if (!bookingData) {
+          Alert.alert("Error", "Data booking tidak ditemukan.");
+          return;
+      }
+
+      // Gabungkan Data Booking + Data Keranjang Alat untuk dikirim ke Payment
+      const finalPayload = {
+          ...bookingData,
+          cartItems: cart,
+      };
+
+      router.push({
+          pathname: "/(payment)/Payment",
+          params: {
+              totalAmount: grandTotal, // Total yang harus dibayar user
+              bookingData: JSON.stringify(finalPayload) // Data lengkap untuk disimpan ke DB nanti
+          }
+      });
+  };
+
     const renderItem = ({ item }: { item: Product }) => {
         const sewaCount = getItemCount(item.id, "sewa");
         const beliCount = getItemCount(item.id, "beli");
@@ -227,6 +267,7 @@ export default function BuysAndRentFishingScreen() {
             </View>
         );
     };
+    
 
     return (
         <SafeAreaView style={styles.container}>

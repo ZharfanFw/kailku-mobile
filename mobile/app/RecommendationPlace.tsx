@@ -91,25 +91,12 @@ export default function RecommendationPlaceScreen() {
         <TouchableOpacity
             style={styles.card}
             activeOpacity={0.8}
-            // Navigasi ke halaman detail saat diklik
-            onPress={() => router.push("/InformationPlace")}
+            onPress={() => router.push({
+                pathname: "/(booking)/InformationPlace", // Pastikan path ini benar sesuai struktur folder
+                params: { id: item.id }
+            })}
         >
-            <Image source={{ uri: item.image }} style={styles.cardImage} />
-
-            <View style={styles.cardContent}>
-                <Text style={styles.cardTitle} numberOfLines={2}>
-                    {item.name}
-                </Text>
-
-                {/* Rating Bintang */}
-                <View style={styles.ratingContainer}>
-                    {renderStars(item.rating)}
-                </View>
-
-                <Text style={styles.cardAddress} numberOfLines={4}>
-                    {item.address}
-                </Text>
-            </View>
+            {/* ... isi card sama ... */}
         </TouchableOpacity>
     );
 

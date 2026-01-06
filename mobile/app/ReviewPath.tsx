@@ -28,20 +28,12 @@ export default function ReviewPathScreen() {
 
     const handleSubmit = () => {
         if (rating === 0) {
-            Alert.alert(
-                "Peringatan",
-                "Mohon berikan rating bintang terlebih dahulu.",
-            );
+            Alert.alert("Peringatan", "Mohon berikan rating bintang terlebih dahulu.");
             return;
         }
 
-        // Logika simpan review bisa ditambahkan di sini
-        console.log("Review Submitted:", { rating, reviewText });
-
-        // Kembali ke halaman sebelumnya setelah submit
-        Alert.alert("Sukses", "Ulasan Anda berhasil dikirim!", [
-            { text: "OK", onPress: () => router.back() },
-        ]);
+        // Pindah ke halaman Sukses
+        router.replace("/ReviewSuccess"); 
     };
 
     return (

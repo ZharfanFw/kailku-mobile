@@ -21,12 +21,15 @@ export default function VirtualAccountScreen() {
 
   // Menerima data yang dikirim dari Payment.tsx
   const params = useLocalSearchParams();
-  const bankName = params.bankName || 'BNI'; // Default jika kosong
+  const bankName = params.bankName || 'BNI';
   const bankImage = params.bankImage || 'https://via.placeholder.com/50x50/F15A23/FFFFFF?text=BNI';
+
+  // Tangkap Total Amount
+  const totalAmountString = Array.isArray(params.totalAmount) ? params.totalAmount[0] : params.totalAmount;
+  const totalAmount = totalAmountString ? parseInt(totalAmountString) : 0;
 
   // Data Dummy
   const vaNumber = "8029 2512 3125 5206";
-  const totalAmount = 11000;
 
   // Format Rupiah
   const formatRupiah = (number: number) => {
@@ -40,8 +43,11 @@ export default function VirtualAccountScreen() {
   };
 
   const handleConfirm = () => {
+    // Disini idealnya panggil API POST /bookings untuk simpan ke database
+    // Gunakan params.bookingData yang dikirim berantai dari Booking -> Payment -> VA
+    
     Alert.alert("Pembayaran Selesai", "Terima kasih telah melakukan pembayaran.", [
-        { text: "OK", onPress: () => router.push('/') } // Kembali ke Home
+        { text: "OK", onPress: () => router.push('/') } 
     ]);
   };
 
