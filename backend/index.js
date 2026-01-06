@@ -4,6 +4,10 @@
 // Memuat variabel rahasia dari file .env ke dalam process.env
 // Wajib paling atas agar konfigurasi terbaca sebelum kode lain jalan.
 require("dotenv").config();
+const path = require("path"); // Tambahkan ini
+
+
+
 
 // 2. INISIALISASI FRAMEWORK
 // Membuat instance aplikasi Fastify dengan logger aktif.
@@ -17,7 +21,8 @@ const jwt = require("@fastify/jwt");
 // A. CORS (Cross-Origin Resource Sharing)
 // Mengizinkan Frontend (Vue.js) mengakses Backend ini.
 fastify.register(require("@fastify/cors"), {
-    origin: ["http://localhost:3000", "http://10.0.2.2:3000"], // Izinkan semua origin (untuk development)
+    // origin: ["http://localhost:3000", "http://10.0.2.2:3000"], // Izinkan semua origin (untuk development)
+    origin: true, // Izinkan semua origin (untuk development)
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     credentials: true,
 });
@@ -96,5 +101,14 @@ const start = async () => {
         process.exit(1);
     }
 };
+
+// TAMBAHKAN INI: Register Static File Serving
+// Ini membuat url http://ip:3000/public/uploads/nama.jpg bisa diakses
+fastify.register(require("@fastify/static"), {
+  root: path.join(__dirname, "public"),
+  prefix: "/public/", 
+});
+
+
 
 start();

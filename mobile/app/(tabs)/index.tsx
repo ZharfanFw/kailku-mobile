@@ -65,23 +65,53 @@ export default function HomeScreen() {
         const fullStars = Math.floor(rating);
         const hasHalfStar = rating % 1 !== 0;
 
-        return (
-            <View style={styles.ratingContainer}>
-                {[...Array(fullStars)].map((_, i) => (
-                    <FontAwesome
-                        key={`full-${i}`}
-                        name="star"
-                        size={12}
-                        color="#333"
-                        style={{ marginRight: 2 }}
-                    />
-                ))}
-                {hasHalfStar && (
-                    <FontAwesome name="star-half-full" size={12} color="#333" />
-                )}
+  return (
+    <View style={styles.container}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 100 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={["#103568"]}
+          />
+        }
+      >
+        {/* === HEADER SECTION === */}
+        <View style={styles.headerContainer}>
+          {/* Gambar Lokal Asset */}
+          <Image
+            // source={require("../../../backend/public/uploads/tempat1.avif")}
+            style={styles.headerImage}
+          />
+        </View>
+
+        {/* WELCOME / AUTH BUTTONS */}
+        <View style={{ marginTop: 20, marginBottom: 10 }}>
+          {isAuthenticated && user ? (
+            <View style={styles.welcomeBanner}>
+              <Text style={styles.welcomeText}>
+                Hai, {user.first_name || user.username}! Siap memancing hari ini?
+              </Text>
             </View>
-        );
-    };
+          ) : (
+            <View style={styles.authButtonsContainer}>
+              <TouchableOpacity
+                style={styles.loginButton}
+                onPress={() => router.push("/(auth)/Login")}
+              >
+                <Text style={styles.loginButtonText}>Masuk</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.signupButton}
+                onPress={() => router.push("/(auth)/SignUp")}
+              >
+                <Text style={styles.signupButtonText}>Daftar</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
 
     return (
         <View style={styles.container}>
@@ -289,7 +319,9 @@ export default function HomeScreen() {
                 <View style={{ height: 100 }} />
             </ScrollView>
         </View>
-    );
+      </ScrollView>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -496,7 +528,8 @@ const styles = StyleSheet.create({
         shadowRadius: 6,
         elevation: 4,
         alignItems: "center", // Center vertical
-    },
+    },50
+
     eventImage: {
         width: 90,
         height: 90,

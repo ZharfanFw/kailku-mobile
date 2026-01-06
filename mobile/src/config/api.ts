@@ -3,7 +3,9 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
+// JADI SEPERTI INI (Pilih salah satu sesuai cara run kamu):
+const API_BASE_URL = "http://10.0.2.2:3000"; // Khusus Android Emulator Studio
+// const API_BASE_URL = "http://192.168.1.4:3000"; // Jika pakai HP Fisik (Ganti x dengan IP laptop)
 
 export const apiClient = axios.create({
     baseURL: API_BASE_URL,

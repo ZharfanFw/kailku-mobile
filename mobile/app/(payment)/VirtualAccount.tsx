@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react'; // Tambah useState
 import {
   StyleSheet,
   Text,
@@ -13,7 +13,7 @@ import {
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
-
+import { api } from '../../src/services/api'; // Import API service if needed
 const { width } = Dimensions.get('window');
 
 export default function VirtualAccountScreen() {
@@ -21,12 +21,16 @@ export default function VirtualAccountScreen() {
 
   // Menerima data yang dikirim dari Payment.tsx
   const params = useLocalSearchParams();
-  const bankName = params.bankName || 'BNI'; // Default jika kosong
+  const [isProcessing, setIsProcessing] = useState(false); // State loading
+  const bankName = params.bankName || 'BNI';
   const bankImage = params.bankImage || 'https://via.placeholder.com/50x50/F15A23/FFFFFF?text=BNI';
+
+  // Tangkap Total Amount
+  const totalAmountString = Array.isArray(params.totalAmount) ? params.totalAmount[0] : params.totalAmount;
+  const totalAmount = totalAmountString ? parseInt(totalAmountString) : 0;
 
   // Data Dummy
   const vaNumber = "8029 2512 3125 5206";
-  const totalAmount = 11000;
 
   // Format Rupiah
   const formatRupiah = (number: number) => {
@@ -39,10 +43,43 @@ export default function VirtualAccountScreen() {
     Alert.alert("Disalin", "Nomor Virtual Account berhasil disalin.");
   };
 
-  const handleConfirm = () => {
-    Alert.alert("Pembayaran Selesai", "Terima kasih telah melakukan pembayaran.", [
-        { text: "OK", onPress: () => router.push('/') } // Kembali ke Home
-    ]);
+  const handleConfirm = async () => {
+    if (isProcessing) return;
+    setIsProcessing(true);
+
+    try {
+        // 1. Ambil data booking lengkap dari params
+        if (!params.bookingData) {
+            Alert.alert("Error", "Data booking tidak ditemukan");
+            return;
+        }
+        const rawData = JSON.parse(params.bookingData as string);
+
+        // 2. Susun Payload untuk Backend
+        const payload = {
+            tempat_id: rawData.spotId,
+            tanggal_booking: rawData.apiDate, // Format YYYY-MM-DD
+            start_time: rawData.time,
+            duration: rawData.duration,
+            no_kursi_list: rawData.seats, // Array kursi
+            total_harga_spot: rawData.spotPriceTotal,
+            cart_items: rawData.cartItems // Array alat
+        };
+
+        // 3. Kirim ke Backend
+        await api.bookings.create(payload);
+
+        // 4. Sukses
+        Alert.alert("Pembayaran Berhasil", "Booking Anda telah tersimpan!", [
+            { text: "OK", onPress: () => router.push('/') } 
+        ]);
+
+    } catch (error: any) {
+        console.error("Booking Error:", error);
+        Alert.alert("Gagal", "Terjadi kesalahan saat menyimpan booking.");
+    } finally {
+        setIsProcessing(false);
+    }
   };
 
   return (
@@ -122,8 +159,8 @@ export default function VirtualAccountScreen() {
           <Text style={styles.footerLabel}>Total Bayar</Text>
           <Text style={styles.footerPrice}>{formatRupiah(totalAmount)}</Text>
         </View>
-        <TouchableOpacity style={styles.payButton} onPress={handleConfirm}>
-          <Text style={styles.payButtonText}>Bayar</Text>
+        <TouchableOpacity style={styles.payButton} onPress={handleConfirm} disabled={isProcessing}>
+          <Text style={styles.payButtonText}>{isProcessing ? "Memproses..." : "Bayar"}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

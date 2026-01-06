@@ -11,12 +11,13 @@ import {
     KeyboardAvoidingView,
     Platform,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useAuth } from "../../src/contexts/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 
 export default function LoginScreen() {
     const router = useRouter();
+    const params = useLocalSearchParams();
     const { login, isLoading } = useAuth();
 
     const [email, setEmail] = useState("");
@@ -34,13 +35,24 @@ export default function LoginScreen() {
 
         try {
             await login(email, password);
-            Alert.alert("Berhasil", "Login berhasil!", [{ text: "OK" }]);
-        } catch (error: any) {
-            console.error("Login error:", error);
-            Alert.alert(
-                "Login Gagal",
-                error.message || "Email atau password sala",
-            );
+            
+            // LOGIC REDIRECT
+            if (params.returnTo) {
+                // Jika ada instruksi kembali (misal ke Booking)
+                router.replace({
+                    pathname: params.returnTo as any,
+                    params: { 
+                        // Teruskan params lain yang dibutuhkan halaman tujuan
+                        id: params.spotId, 
+                        price: params.price 
+                    }
+                });
+            } else {
+                // Default ke Profile
+                router.replace("/(tabs)/profile");
+            }
+        } catch (error) {
+            Alert.alert("Login Gagal", "Email atau password salah.");
         } finally {
             setIsSubmitting(false);
         }

@@ -1,12 +1,16 @@
 export interface User {
-    id: number;
-    username: string;
-    email: string;
-    full_name: string;
-    first_name?: string;
-    last_name?: string;
+  id: number;
+  username: string;
+  email: string;
+  full_name?: string;
+  avatar_url?: string | null;
+  phone?: string;
+  address?: string;
+  first_name?: string;
+  last_name?: string;
 }
 
+// PERBAIKAN DI SINI SESUAI DATABASE
 export interface Spot {
     id: string;
     nama: string;
@@ -32,12 +36,12 @@ export interface Booking {
 }
 
 export interface Product {
-    id: string;
-    nama: string;
-    harga_beli: number;
-    harga_sewa: number;
-    diskon?: number;
-    image_url?: string;
+  id: number;
+  nama: string;
+  harga_sewa?: number;
+  harga_beli?: number;
+  image_url: string;
+  kategori: string;
 }
 
 export interface Tip {
@@ -53,4 +57,15 @@ export interface Event {
     tanggal: string;
     total_hadiah: number;
     gambar?: string;
+}
+
+export interface Tool {
+  id: number;
+  nama: string;           // DB: nama
+  deskripsi?: string;
+  harga_sewa: number;     // DB: harga_sewa
+  harga_beli: number;     // DB: harga_beli
+  stok: number;
+  image_url?: string;     // DB: image_url
+  kategori?: string;
 }
