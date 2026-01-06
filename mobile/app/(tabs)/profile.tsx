@@ -21,7 +21,7 @@ export default function ProfileScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   
-  // State untuk Toggle
+  // State untuk Toggle UI (Hanya visual sementara)
   const [darkMode, setDarkMode] = useState(false);
   const [notifications, setNotifications] = useState(true);
 
@@ -30,12 +30,12 @@ export default function ProfileScreen() {
 
   // EFEK PENTING: Pantau status login
   useEffect(() => {
-    // Jika state berubah menjadi tidak login, otomatis lempar ke Login
+    // Jika user tiba-tiba tidak terautentikasi (misal token expired atau logout sukses)
     if (!isAuthenticated) {
-        // Gunakan replace agar user tidak bisa tekan tombol Back ke profile
+        // Redirect ke login agar tidak stuck di halaman profil
         router.replace("/(auth)/Login");
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated]); 
 
   // Handle Logout yang sebenarnya
   const handleLogout = () => {
@@ -46,9 +46,12 @@ export default function ProfileScreen() {
         style: "destructive",
         onPress: async () => {
           try {
-              // HANYA panggil fungsi ini. 
-              // Biarkan useEffect di atas yang mengurus navigasinya.
-              await logout(); 
+              // 1. Jalankan proses logout (hapus storage & state di context)
+              await logout();
+              
+              // 2. Navigasi manual ke Login sebagai backup 
+              // (berjaga-jaga jika useEffect lambat merespon perubahan state)
+              router.replace("/(auth)/Login"); 
           } catch (error) {
               console.error("Gagal logout:", error);
               Alert.alert("Error", "Gagal keluar akun. Coba lagi.");
@@ -58,7 +61,7 @@ export default function ProfileScreen() {
     ]);
   };
 
-  // Navigasi ke Edit Profile (Sudah diperbaiki path-nya)
+  // Navigasi ke Edit Profile
   const handleEditProfile = () => {
       router.push("/edit-profile"); 
   };

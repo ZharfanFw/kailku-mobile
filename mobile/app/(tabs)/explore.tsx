@@ -66,10 +66,11 @@ export default function ExploreScreen() {
   const renderItem = ({ item }: { item: Spot }) => (
     <TouchableOpacity
       style={styles.card}
+      // PERBAIKAN DI SINI:
       onPress={() => {
         router.push({
-          pathname: "/(booking)/InformationPlace",
-          params: { id: item.id },
+            pathname: "/InformationPlace", // Hapus '/(booking)'
+            params: { id: item.id } 
         });
       }}
     >

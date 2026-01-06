@@ -8,28 +8,13 @@ import {
   TouchableOpacity,
   SafeAreaView,
   ScrollView,
-  Dimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const { width } = Dimensions.get("window");
-
-// Event data interface
-interface EventData {
-  id: string;
-  title: string;
-  date: string;
-  location: string;
-  totalPrize: string;
-  registrationFee: string;
-  criteria: string;
-  image: string;
-}
-
-// Mock data Dummy
-const events: EventData[] = [
+// DATA DUMMY EVENT (Masih dipakai sesuai permintaan)
+const events = [
   {
     id: "1",
     title: "Master Angler Open Cup",
@@ -66,15 +51,15 @@ export default function EventScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  const renderEventCard = ({ item }: { item: EventData }) => (
+  const renderEventCard = ({ item }: { item: any }) => (
     <TouchableOpacity style={styles.eventCard}>
       <Image source={{ uri: item.image }} style={styles.eventImage} />
       <View style={styles.eventDetails}>
         <Text style={styles.eventTitle}>{item.title}</Text>
         <Text style={styles.eventText}>{item.location}</Text>
         <Text style={styles.eventText}>{item.date}</Text>
-        <Text style={[styles.eventText, { fontWeight: 'bold', color: '#103568' }]}>
-            Hadiah: {item.totalPrize}
+        <Text style={[styles.eventText, { fontWeight: "bold", color: "#103568" }]}>
+          Hadiah: {item.totalPrize}
         </Text>
         <Text style={styles.eventText}>Biaya: {item.registrationFee}</Text>
         <Text style={styles.eventText}>Kriteria: {item.criteria}</Text>
@@ -95,13 +80,17 @@ export default function EventScreen() {
         <View style={{ width: 40 }} />
       </View>
 
-      <FlatList
-        data={events}
-        renderItem={renderEventCard}
-        keyExtractor={(item) => item.id}
+      <ScrollView
         contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
         showsVerticalScrollIndicator={false}
-      />
+      >
+        <FlatList
+          data={events}
+          renderItem={renderEventCard}
+          keyExtractor={(item) => item.id}
+          scrollEnabled={false} // Scroll dihandle oleh ScrollView induk
+        />
+      </ScrollView>
     </SafeAreaView>
   );
 }

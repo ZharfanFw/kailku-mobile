@@ -8,33 +8,31 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
-  ViewStyle, // Tambahan untuk type safety styling
 } from "react-native";
 import { Ionicons, FontAwesome } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { api } from "../../src/services/api";
+import { api } from "../../src/services/api"; // API Service
 import { useAuth } from "@/src/contexts/AuthContext";
+import { Spot } from "../../src/types";
 
-// Interface Spot (Pastikan id number sesuai perbaikan sebelumnya)
-interface Spot {
-  id: number;
-  nama: string;
-  lokasi: string;
-  harga_per_jam: number;
-  image_url?: string;
-  rating?: number;
-}
+// Data Dummy Event untuk di Home (Preview)
+const dummyEvent = {
+    title: "Master Angler Open Cup",
+    location: "Malang",
+    date: "20 April 2025",
+    prize: "Rp700.000",
+    image: "https://t3.ftcdn.net/jpg/02/43/12/34/360_F_243123463_zTooub557xEWABDLk0jJklDyLSGl2jrr.jpg"
+};
 
 export default function HomeScreen() {
   const router = useRouter();
   const [spots, setSpots] = useState<Spot[]>([]);
-  const [tips, setTips] = useState<any[]>([]);
-  const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const { user, isAuthenticated } = useAuth();
 
+  // Fetch Spots dari API (Database)
   const fetchSpots = async () => {
     try {
       const spotsData = await api.spots.getAll();
@@ -49,31 +47,13 @@ export default function HomeScreen() {
     }
   };
 
-  const fetchContent = async () => {
-    try {
-      try {
-        const tipsData = await api.get<any[]>("/content/tips");
-        setTips(tipsData);
-      } catch (e) {}
-
-      try {
-        const eventsData = await api.get<any[]>("/content/lomba");
-        setEvents(eventsData);
-      } catch (e) {}
-    } catch (error) {
-      console.error("Failed to fetch content:", error);
-    }
-  };
-
   useEffect(() => {
     fetchSpots();
-    fetchContent();
   }, []);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     fetchSpots();
-    fetchContent();
   }, []);
 
   const renderStars = (rating: number = 4.5) => {
@@ -113,12 +93,11 @@ export default function HomeScreen() {
       >
         {/* === HEADER SECTION === */}
         <View style={styles.headerContainer}>
-          {/* MENGGUNAKAN GAMBAR LOKAL */}
+          {/* Gambar Lokal Asset */}
           <Image
             source={require("../../assets/images/tempat-pemancingan/tempat1.avif")}
             style={styles.headerImage}
           />
-          {/* Search Bar DIHAPUS dari sini */}
         </View>
 
         {/* WELCOME / AUTH BUTTONS */}
@@ -147,7 +126,7 @@ export default function HomeScreen() {
           )}
         </View>
 
-        {/* === SECTION 1: RECOMMENDATIONS === */}
+        {/* === SECTION 1: REKOMENDASI (DATA API) === */}
         <View style={styles.section}>
           <TouchableOpacity
             style={styles.sectionHeader}
@@ -172,9 +151,10 @@ export default function HomeScreen() {
                   <TouchableOpacity
                     key={spot.id}
                     style={styles.card}
+                    // PERBAIKAN DI SINI:
                     onPress={() =>
                       router.push({
-                        pathname: "/(booking)/InformationPlace",
+                        pathname: "/InformationPlace", // Hapus '/(booking)'
                         params: { id: spot.id },
                       })
                     }
@@ -184,7 +164,7 @@ export default function HomeScreen() {
                         uri:
                           spot.image_url && spot.image_url.startsWith("http")
                             ? spot.image_url
-                            : "https://placehold.co/600x400/103568/FFF?text=Spot",
+                            : `https://placehold.co/400x300/103568/FFF?text=${spot.nama}`,
                       }}
                       style={styles.cardImage}
                     />
@@ -209,7 +189,7 @@ export default function HomeScreen() {
           )}
         </View>
 
-        {/* === SECTION 2: TIPS & TRICKS === */}
+        {/* === SECTION 2: TIPS & TRICKS (DATA DUMMY) === */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Tips & Tricks</Text>
           <View style={styles.tipsCard}>
@@ -233,37 +213,27 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* === SECTION 3: EVENT === */}
+        {/* === SECTION 3: EVENT (DATA DUMMY) === */}
         <View style={styles.section}>
-          <TouchableOpacity style={styles.sectionHeader} onPress={() => {}}>
+          <TouchableOpacity style={styles.sectionHeader} onPress={() => router.push("/(tabs)/events")}>
             <Text style={styles.sectionTitle}>Event Mendatang</Text>
             <Ionicons name="chevron-forward" size={20} color="#333" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.eventCard}>
+
+          <TouchableOpacity 
+            style={styles.eventCard}
+            onPress={() => router.push("/(tabs)/events")}
+          >
             <Image
-            source={require("../../assets/images/tempat-pemancingan/lomba2.avif")}
-            style={styles.eventImage}
-          />
+              source={{ uri: dummyEvent.image }}
+              style={styles.eventImage}
+            />
             <View style={styles.eventDetails}>
-              <Text style={styles.eventTitle}>“Master Angler Open Cup”</Text>
-              <Text style={styles.eventText}>📍 Malang</Text>
-              <Text style={styles.eventText}>🗓 20 April 2025</Text>
+              <Text style={styles.eventTitle}>“{dummyEvent.title}”</Text>
+              <Text style={styles.eventText}>📍 {dummyEvent.location}</Text>
+              <Text style={styles.eventText}>🗓 {dummyEvent.date}</Text>
               <Text style={[styles.eventText, { fontWeight: "bold", color: "#103568" }]}>
-                Hadiah: Rp700.000
-              </Text>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.eventCard}>
-            <Image
-            source={require("../../assets/images/tempat-pemancingan/lomba1.avif")}
-            style={styles.eventImage}
-          />
-            <View style={styles.eventDetails}>
-              <Text style={styles.eventTitle}>“Master Angler Open Cup”</Text>
-              <Text style={styles.eventText}>📍 Malang</Text>
-              <Text style={styles.eventText}>🗓 20 April 2025</Text>
-              <Text style={[styles.eventText, { fontWeight: "bold", color: "#103568" }]}>
-                Hadiah: Rp700.000
+                Hadiah: {dummyEvent.prize}
               </Text>
             </View>
           </TouchableOpacity>
