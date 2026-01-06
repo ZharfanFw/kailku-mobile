@@ -18,7 +18,6 @@ import { useAuth } from "@/src/contexts/AuthContext";
 
 const { width, height } = Dimensions.get("window");
 const SEAT_SIZE = 35;
-// const PRICE_PER_HOUR = 25000; // Harga default (akan ditimpa data API)
 
 export default function BookingScreen() {
   const router = useRouter();
@@ -33,65 +32,85 @@ export default function BookingScreen() {
 
   // --- STATE DATA ---
   const today = new Date();
-  // Format YYYY-MM-DD untuk API backend MySQL
+  
+  // Helper Format Tanggal
   const formatDateForApi = (d: Date) => {
       return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
   };
-  // Format DD/MM/YYYY untuk tampilan UI
   const formatDateForDisplay = (d: Date) => {
       return `${d.getDate().toString().padStart(2, "0")}/${(d.getMonth() + 1).toString().padStart(2, "0")}/${d.getFullYear()}`;
   };
 
   const [date, setDate] = useState(formatDateForDisplay(today)); // UI Date
-  const [apiDate, setApiDate] = useState(formatDateForApi(today)); // API Date
+  const [apiDate, setApiDate] = useState(formatDateForApi(today)); // API Date (YYYY-MM-DD)
+  
+  // Default values
   const [time, setTime] = useState("--Pilih Jam--");
   const [duration, setDuration] = useState(1);
+  
   const [selectedSeats, setSelectedSeats] = useState<number[]>([]);
   const [seatStatus, setSeatStatus] = useState<{ [key: number]: "filled" | "empty" }>({});
   
   const [modalVisible, setModalVisible] = useState<"none" | "date" | "time" | "duration">("none");
 
-  // Fetch Ketersediaan Kursi
-  const fetchSeatAvailability = async (spot_id: string, bookingDate: string) => {
-    if (!spot_id) return;
+  // --- FUNGSI UTAMA: CEK KETERSEDIAAN KURSI ---
+  const fetchSeatAvailability = async () => {
+    // Pastikan semua parameter penting sudah terisi
+    if (!spotId || !apiDate || time === "--Pilih Jam--") {
+        // Jika data belum lengkap, kita anggap semua kursi kosong dulu atau reset status
+        setSeatStatus({});
+        return;
+    }
+
     try {
-      // Panggil API: /bookings/check-seats?tempat_id=...&tanggal=...
-      const response = await api.bookings.checkSeats(spot_id, bookingDate);
+      // Panggil API dengan parameter lengkap (spotId, tanggal, jam, durasi)
+      const response = await api.bookings.checkSeats(
+          spotId, 
+          apiDate, 
+          time, // Format "HH:MM" (misal: "10:00")
+          duration
+      );
 
       const newSeatStatus: { [key: number]: "filled" | "empty" } = {};
+      
       if (response.bookedSeats && Array.isArray(response.bookedSeats)) {
         response.bookedSeats.forEach((seatNum: number) => {
           newSeatStatus[seatNum] = "filled";
         });
       }
+      
       setSeatStatus(newSeatStatus);
-      // Reset pilihan kursi jika tanggal berubah
-      setSelectedSeats([]); 
+
+      // Cek apakah kursi yang sedang dipilih tiba-tiba jadi 'filled' (konflik)
+      // Jika ya, hapus dari seleksi
+      const validSelectedSeats = selectedSeats.filter(seat => !newSeatStatus[seat]);
+      if (validSelectedSeats.length !== selectedSeats.length) {
+          Alert.alert("Perubahan Status", "Beberapa kursi yang Anda pilih sudah tidak tersedia pada jam tersebut.");
+          setSelectedSeats(validSelectedSeats);
+      }
+
     } catch (error) {
       console.error("Failed to fetch seat availability:", error);
     }
   };
 
-  // Efek saat ID atau Tanggal berubah
+  // Efek: Panggil fetchSeatAvailability setiap kali parameter kunci berubah
   useEffect(() => {
-    if (spotId) {
-        fetchSeatAvailability(spotId, apiDate);
-    }
-  }, [spotId, apiDate]);
+    fetchSeatAvailability();
+  }, [spotId, apiDate, time, duration]); // Dependency array penting!
 
   // --- DATA OPSI ---
   const timeOptions = [
     "07:00", "08:00", "09:00", "10:00", "11:00", "12:00",
-    "13:00", "14:00", "15:00", "16:00",
+    "13:00", "14:00", "15:00", "16:00", "17:00", "18:00"
   ];
 
   const durationOptions = Array.from({ length: 8 }, (_, i) => i + 1);
 
-  // Generate Date Options (Object berisi label dan value)
   const generateDates = () => {
     const dates = [];
     const start = new Date();
-    for (let i = 0; i < 30; i++) { // 30 Hari kedepan cukup
+    for (let i = 0; i < 30; i++) {
       const d = new Date(start);
       d.setDate(start.getDate() + i);
       dates.push({
@@ -103,9 +122,14 @@ export default function BookingScreen() {
   };
   const dateOptions = generateDates();
 
-  // --- LOGIC ---
+  // --- LOGIC UI ---
   const toggleSeat = (id: number) => {
+    if (time === "--Pilih Jam--") {
+        Alert.alert("Info", "Silakan pilih Jam Mulai terlebih dahulu untuk melihat ketersediaan.");
+        return;
+    }
     if (seatStatus[id] === "filled") return;
+    
     if (selectedSeats.includes(id)) {
       setSelectedSeats(selectedSeats.filter((seatId) => seatId !== id));
     } else {
@@ -140,12 +164,10 @@ export default function BookingScreen() {
                 { 
                     text: "Login Sekarang", 
                     onPress: () => {
-                        // Redirect ke Login dengan membawa 'returnTo' dan data booking saat ini
                         router.push({
                             pathname: "/(auth)/Login",
                             params: { 
                                 returnTo: "/(booking)/Booking",
-                                // Kita kirim balik ID spot agar halaman booking merender tempat yang sama
                                 spotId: spotId,
                                 price: pricePerHour.toString()
                             }
@@ -157,19 +179,21 @@ export default function BookingScreen() {
         return;
     }
 
-    // 3. Jika Sudah Login, Lanjut ke Sewa Alat
+    // 3. Lanjut ke Sewa Alat (Passing Data)
     const bookingPayload = {
         spotId,
         date: apiDate,
         time,
         duration,
         seats: selectedSeats,
-        spotPriceTotal: totalPrice, // Harga total tiket mancing
+        spotPriceTotal: totalPrice,
     };
 
     router.push({
         pathname: "/BuysAndRentFishing",
         params: {
+            // Kirim spotId agar halaman berikutnya bisa ambil alat sesuai tempat
+            spotId: spotId, 
             bookingData: JSON.stringify(bookingPayload)
         }
     });
@@ -212,7 +236,7 @@ export default function BookingScreen() {
     let title = "";
 
     if (modalVisible === "date") {
-      data = dateOptions; // Array of Objects {label, value}
+      data = dateOptions;
       title = "Pilih Tanggal";
       onSelect = (item) => {
           setDate(item.label);
@@ -227,7 +251,7 @@ export default function BookingScreen() {
       title = "Pilih Durasi";
       onSelect = (val) => setDuration(val);
     }
-<SafeAreaView style={styles.container}></SafeAreaView>
+
     return (
       <Modal
         animationType="slide"
@@ -292,7 +316,7 @@ export default function BookingScreen() {
           {/* JAM & DURASI */}
           <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
               <View style={{width: '48%'}}>
-                  <Text style={styles.label}>Jam</Text>
+                  <Text style={styles.label}>Jam Mulai</Text>
                   <TouchableOpacity style={styles.inputBox} onPress={() => setModalVisible("time")}>
                     <Text style={[styles.inputText, time === "--Pilih Jam--" && { color: "#999" }]}>{time}</Text>
                     <Ionicons name="chevron-down" size={20} color="#333" />
@@ -355,7 +379,6 @@ export default function BookingScreen() {
           disabled={selectedSeats.length === 0 || time === "--Pilih Jam--"}
           onPress={handleProceed}
         >
-          {/* Ubah text tombol agar user paham */}
           <Text style={styles.checkoutButtonText}>
              {isAuthenticated ? "Lanjut Sewa Alat" : "Login untuk Pesan"}
           </Text>

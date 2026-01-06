@@ -1,3 +1,5 @@
+// mobile/src/types/index.tsx
+
 export interface User {
   id: number;
   username: string;
@@ -10,66 +12,64 @@ export interface User {
   last_name?: string;
 }
 
-// PERBAIKAN DI SINI SESUAI DATABASE
 export interface Spot {
   id: number;
-  nama: string;           // DB: nama (bukan name)
-  lokasi: string;         // DB: lokasi (bukan address)
-  kota?: string;          // DB: kota
-  deskripsi?: string;     // DB: deskripsi
-  harga_per_jam: number;  // DB: harga_per_jam (bukan price)
-  image_url?: string;     // DB: image_url
-  fasilitas?: string;     // DB: fasilitas
-  jam_buka?: string;      // DB: jam_buka
-  jam_tutup?: string;     // DB: jam_tutup
-  rating?: number;        // (Opsional, jika backend melakukan join ke tabel reviews)
+  nama: string;
+  lokasi: string;
+  kota?: string;
+  harga_per_jam: number;
+  image_url?: string;
+  rating?: number;
+  deskripsi?: string;
+  fasilitas?: string;
+}
+
+export interface Lomba {
+  id: number;
+  nama_lomba: string;
+  lokasi: string;
+  tanggal_pelaksanaan: string;
+  biaya_pendaftaran: number;
+  hadiah_utama: string;
+  image_url?: string;
+  deskripsi?: string;
 }
 
 export interface Booking {
-    id: number;
-    user_id: number;
-    tempat_id: number;
-    tanggal_booking: string;
-    no_kursi: number;
-    start_time: string;
-    end_time: string;
-    total_harga: number;
-    status: string;
-    nama_tempat?: string;
-    lokasi_tempat?: string;
-}
-
-export interface Product {
   id: number;
-  nama: string;
-  harga_sewa?: number;
-  harga_beli?: number;
-  image_url: string;
-  kategori: string;
+  user_id: number;
+  tempat_id: number;
+  tanggal_booking: string;
+  no_kursi: number;
+  start_time: string;
+  end_time: string;
+  total_harga: number;
+  status: string;
+  nama_tempat?: string;
+  lokasi_tempat?: string;
 }
 
-export interface Tip {
-    id: number;
-    judul: string;
-    konten: string;
-}
-
-export interface Event {
-    id: number;
-    nama: string;
-    kota: string;
-    tanggal: string;
-    total_hadiah: number;
-    gambar?: string;
-}
-
+// Gunakan satu interface ini untuk Alat Pancing (Sewa/Beli)
+// Menggabungkan Product dan Tool yang sebelumnya terpisah
 export interface Tool {
   id: number;
-  nama: string;           // DB: nama
+  nama: string;
   deskripsi?: string;
-  harga_sewa: number;     // DB: harga_sewa
-  harga_beli: number;     // DB: harga_beli
+  harga_sewa: number;  // Bisa null di DB, tapi di UI kita handle sbg number (0 jika null)
+  harga_beli: number;
   stok: number;
-  image_url?: string;     // DB: image_url
+  image_url?: string;
   kategori?: string;
+  // Properti tambahan untuk keranjang belanja (Frontend only)
+  transaksi_price?: number; 
+  type?: "sewa" | "beli";
+}
+
+// Hapus interface Product yang duplikat agar tidak bingung
+// export interface Product { ... } <--- HAPUS INI
+
+export interface Tip {
+  id: number;
+  judul: string;
+  konten: string;
 }

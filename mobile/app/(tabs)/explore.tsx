@@ -11,26 +11,36 @@ import {
   SafeAreaView,
   Platform,
   StatusBar,
-  TextInput, // Added TextInput
+  TextInput,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { api } from "../../src/services/api";
 import { Spot } from "../../src/types";
 
+// URL Backend (Ensure this matches your backend address)
+const API_BASE_URL = "http://10.0.2.2:3000";
+
 export default function ExploreScreen() {
   const router = useRouter();
   const [spots, setSpots] = useState<Spot[]>([]);
-  const [filteredSpots, setFilteredSpots] = useState<Spot[]>([]); // State untuk hasil filter
-  const [searchQuery, setSearchQuery] = useState(""); // State untuk text search
+  const [filteredSpots, setFilteredSpots] = useState<Spot[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Helper function to construct the full image URL
+  const getImageUrl = (imageName?: string) => {
+    if (!imageName) return "https://via.placeholder.com/400x300?text=No+Image";
+    if (imageName.startsWith("http")) return imageName;
+    return `${API_BASE_URL}/public/uploads/${imageName}`;
+  };
 
   const fetchSpots = async () => {
     try {
       const data = await api.spots.getAll();
       setSpots(data);
-      setFilteredSpots(data); // Inisialisasi data filter
+      setFilteredSpots(data);
     } catch (error) {
       console.error("Gagal mengambil data spot:", error);
     } finally {
@@ -43,7 +53,6 @@ export default function ExploreScreen() {
     fetchSpots();
   }, []);
 
-  // Logika Pencarian
   const handleSearch = (text: string) => {
     setSearchQuery(text);
     if (text) {
@@ -66,24 +75,16 @@ export default function ExploreScreen() {
   const renderItem = ({ item }: { item: Spot }) => (
     <TouchableOpacity
       style={styles.card}
-      // PERBAIKAN DI SINI:
       onPress={() => {
         router.push({
-            pathname: "/InformationPlace", // Hapus '/(booking)'
-            params: { id: item.id } 
+          pathname: "/InformationPlace",
+          params: { id: item.id },
         });
       }}
     >
       <Image
-        source={{
-          uri:
-            item.image_url && item.image_url.startsWith("http")
-              ? item.image_url
-              : `https://placehold.co/600x400/103568/FFF?text=${item.nama.replace(
-                  / /g,
-                  "+"
-                )}`,
-        }}
+        // Use the helper function here
+        source={{ uri: getImageUrl(item.image_url) }}
         style={styles.cardImage}
         resizeMode="cover"
       />
@@ -123,7 +124,8 @@ export default function ExploreScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* HEADER DENGAN SEARCH BAR */}
+      <StatusBar barStyle="dark-content" backgroundColor="#F8F9FA" />
+      {/* Header */}
       <View style={styles.header}>
         <View style={{ flex: 1, marginRight: 15 }}>
           <Text style={styles.greeting}>Mau mancing di mana?</Text>
@@ -137,7 +139,7 @@ export default function ExploreScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* SEARCH BAR COMPONENT */}
+      {/* Search Bar */}
       <View style={styles.searchContainer}>
         <View style={styles.searchBar}>
           <Ionicons
@@ -163,7 +165,7 @@ export default function ExploreScreen() {
         </View>
       ) : (
         <FlatList
-          data={filteredSpots} // Menggunakan data hasil filter
+          data={filteredSpots}
           renderItem={renderItem}
           keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={styles.listContent}
@@ -202,7 +204,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 15,
     paddingBottom: 10,
-    backgroundColor: "#F8F9FA", // Samakan dengan background container
+    backgroundColor: "#F8F9FA",
   },
   greeting: {
     fontSize: 20,
@@ -217,7 +219,6 @@ const styles = StyleSheet.create({
   profileButton: {
     padding: 4,
   },
-  // Style Search Bar Baru
   searchContainer: {
     paddingHorizontal: 20,
     paddingBottom: 15,

@@ -110,7 +110,13 @@ export default function PaymentScreen() {
 
         // 2. Logika untuk Qris
         if (selectedMethod === "Qris") {
-            router.push("/(payment)/Qris"); // Pindah ke file Qris.tsx
+            router.push({
+                pathname: "/(payment)/Qris",
+                params: {
+                    bookingData: params.bookingData, // <-- WAJIB DIKIRIM
+                    totalAmount: totalPayment
+                }
+            });
             return;
         }
 

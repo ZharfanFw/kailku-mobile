@@ -48,22 +48,30 @@ export default function VirtualAccountScreen() {
     setIsProcessing(true);
 
     try {
-        // 1. Ambil data booking lengkap dari params
+        // 1. Ambil data booking lengkap
         if (!params.bookingData) {
             Alert.alert("Error", "Data booking tidak ditemukan");
             return;
         }
+        
+        // Parsing data yang dikirim dari halaman sebelumnya
         const rawData = JSON.parse(params.bookingData as string);
+        
+        // DEBUG: Cek isi data di console (Opsional)
+        console.log("Data Booking:", rawData);
 
-        // 2. Susun Payload untuk Backend
+        // 2. Susun Payload (PERBAIKAN KUNCI DI SINI)
         const payload = {
             tempat_id: rawData.spotId,
-            tanggal_booking: rawData.apiDate, // Format YYYY-MM-DD
+            
+            // PERBAIKAN: Gunakan 'rawData.date' (sesuai key di Booking.tsx), bukan 'rawData.apiDate'
+            tanggal_booking: rawData.date,
+            
             start_time: rawData.time,
             duration: rawData.duration,
-            no_kursi_list: rawData.seats, // Array kursi
+            no_kursi_list: rawData.seats,
             total_harga_spot: rawData.spotPriceTotal,
-            cart_items: rawData.cartItems // Array alat
+            cart_items: rawData.cartItems || [] // Tambahkan fallback array kosong
         };
 
         // 3. Kirim ke Backend
@@ -76,7 +84,9 @@ export default function VirtualAccountScreen() {
 
     } catch (error: any) {
         console.error("Booking Error:", error);
-        Alert.alert("Gagal", "Terjadi kesalahan saat menyimpan booking.");
+        // Tampilkan pesan error spesifik dari backend jika ada
+        const errorMsg = error.response?.data?.message || "Terjadi kesalahan saat menyimpan booking.";
+        Alert.alert("Gagal", errorMsg);
     } finally {
         setIsProcessing(false);
     }

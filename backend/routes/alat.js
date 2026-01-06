@@ -6,19 +6,18 @@
  */
 async function alatRoutes(fastify, options) {
   // GET /alat_pancing?tempat_id=1
-  fastify.get("/", async (request, reply) => {
+  fastify.get('/', async (request, reply) => {
     const { tempat_id } = request.query;
-    
     let connection;
     try {
       connection = await fastify.mysql.getConnection();
       
-      let query = "SELECT * FROM tempat_alat";
+      let query = 'SELECT * FROM tempat_alat';
       let params = [];
 
-      // Filter jika ada tempat_id
+      // Jika ada tempat_id, filter. Jika tidak, tampilkan semua (opsional)
       if (tempat_id) {
-        query += " WHERE tempat_id = ?";
+        query += ' WHERE tempat_id = ?';
         params.push(tempat_id);
       }
 
@@ -27,7 +26,7 @@ async function alatRoutes(fastify, options) {
       return rows;
     } catch (err) {
       if (connection) connection.release();
-      reply.status(500).send({ message: err.message });
+      return reply.status(500).send({ message: err.message });
     }
   });
 }

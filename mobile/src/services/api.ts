@@ -1,5 +1,5 @@
 import { apiClient } from "../config/api";
-import { Spot, Product } from "../types";
+import { Spot, Tool } from "../types"; // Ubah Product jadi Tool
 
 export const api = {
 
@@ -58,14 +58,15 @@ export const api = {
     },
 
     spots: {
-        getAll: async (): Promise<Spot[]> => {
-            return await api.get<Spot[]>("/tempat_mancing");
-        },
-
-        getById: async (id: string): Promise<Spot> => {
-            return await api.get<Spot>(`/tempat_mancing/${id}`);
-        },
+    getAll: async () => {
+      const response = await apiClient.get("/spots");
+      return response.data;
     },
+    getById: async (id: string | number) => {
+      const response = await apiClient.get(`/spots/${id}`);
+      return response.data;
+    },
+  },
 
     content: {
         getTips: async () => {
@@ -78,27 +79,47 @@ export const api = {
     },
 
     bookings: {
-        // UPDATE: Fungsi Check Seats
-        checkSeats: async (tempat_id: string, tanggal: string) => {
-            return await api.get<{ bookedSeats: number[] }>(
-                "/bookings/check-seats",
-                { tempat_id, tanggal }
-            );
-        },
-        // BARU: Fungsi Create Booking
-        create: async (data: any) => {
-            return await api.post("/bookings", data);
-        },
-        myBookings: async () => {
-            return await api.get<any[]>("/bookings/my");
-        },
+    create: async (data: any) => {
+      const response = await apiClient.post("/bookings", data);
+      return response.data;
     },
+    // UPDATE FUNGSI INI:
+    checkSeats: async (tempat_id: string, tanggal: string, start_time: string, duration: number) => {
+      const response = await apiClient.get("/bookings/check-seats", {
+        params: { tempat_id, tanggal, start_time, duration },
+      });
+      return response.data;
+    },
+    myBookings: async () => {
+      const response = await apiClient.get("/bookings/my");
+      return response.data;
+    },
+  },
+  
 
     products: {
-        // UPDATE: Terima parameter tempat_id
-        getAll: async (tempat_id?: string) => {
-            // Kirim query params ke backend
-            return await api.get<any[]>("/alat_pancing", { tempat_id });
-        },
+    getAll: async (tempat_id?: string) => {
+        const response = await apiClient.get("/alat_pancing", { params: { tempat_id } });
+        return response.data;
     },
+  },
+
+    // TAMBAHKAN endpoint events/lomba (Pastikan backend punya route GET /lomba)
+  // Jika backend belum punya route '/lomba', Anda perlu membuatnya dulu di backend.
+  // Asumsi: Anda sudah membuat GET /lomba di backend yang me-return SELECT * FROM lomba
+  events: {
+    getAll: async () => {
+      // Ganti URL ini jika endpoint backend Anda berbeda (misal: /events)
+      // Kita asumsikan endpoint backendnya adalah /spots/lomba atau buat route baru /lomba
+      // Untuk solusi cepat, saya akan mock data di UI jika fetch gagal, 
+      // tapi idealnya panggil: return (await apiClient.get("/lomba")).data;
+      try {
+          const response = await apiClient.get("/lomba");
+          return response.data;
+      } catch (e) {
+          console.warn("Endpoint /lomba belum ada, return empty array");
+          return [];
+      }
+    }
+  }
 };
