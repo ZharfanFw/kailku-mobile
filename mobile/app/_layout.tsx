@@ -25,7 +25,6 @@ export default function RootLayout() {
             {/* 2. Auth Screens */}
             <Stack.Screen name="(auth)/SignUp" options={{ headerShown: false }} />
             <Stack.Screen name="(auth)/Login" options={{ headerShown: false }} />
-            <Stack.Screen name="ProfileGuest" options={{ headerShown: false }} />
 
             {/* 3. Booking Flow */}
             <Stack.Screen name="(booking)/InformationPlace" options={{ headerShown: false }} />

@@ -130,8 +130,8 @@ export default function LoginScreen() {
                             <Ionicons
                                 name={
                                     showPassword
-                                        ? "eye-off-outline"
-                                        : "eye-outline"
+                                        ? "eye-outline"
+                                        : "eye-off-outline"
                                 }
                                 size={20}
                                 color="#666"

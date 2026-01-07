@@ -122,13 +122,6 @@ export default function TabLayout() {
                 name="notifications"
                 options={{
                     title: "Notifications",
-                    tabBarBadge: 3,
-                    tabBarBadgeStyle: {
-                        backgroundColor: "#FF3B30",
-                        color: "#FFFFFF",
-                        fontSize: 10,
-                        fontWeight: "bold",
-                    },
                     tabBarIcon: ({ color, focused }) => (
                         <Animated.View
                             entering={FadeInUp.duration(200).springify()}
@@ -145,14 +138,7 @@ export default function TabLayout() {
             />
             <Tabs.Screen
                 name="profile"
-                listeners={{
-                    tabPress: (e) => {
-                        if (!isAuthenticated) {
-                            e.preventDefault();
-                            router.replace("/ProfileGuest");
-                        }
-                    },
-                }}
+                
                 options={{
                     title: "Profile",
                     tabBarIcon: ({ color, focused }) => (

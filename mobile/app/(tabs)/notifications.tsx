@@ -187,15 +187,7 @@ export default function NotificationsScreen() {
                   {/* ACTION BUTTONS */}
                   {(item.status === "paid" || item.status === "completed") && (
                     <View style={styles.actionButtonsContainer}>
-                      <TouchableOpacity
-                        style={styles.actionButton}
-                        onPress={() => 
-                            // OPSI 1: Gunakan 'as any' untuk mem-bypass error typing sementara
-                            router.push("/(booking)/ReviewPath" as any) 
-                        }
-                      >
-                        <Text style={styles.actionButtonText}>Review</Text>
-                      </TouchableOpacity>
+                      
                       <TouchableOpacity
                         style={styles.actionButton}
                         onPress={() =>

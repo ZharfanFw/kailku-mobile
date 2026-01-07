@@ -28,7 +28,7 @@ export default function BookingScreen() {
     if (!isAuthenticated) {
       // Jika masuk ke file ini tapi belum login, langsung balikkan ke InformationPlace
       // atau ke ProfileGuest
-      router.replace("/ProfileGuest"); 
+      router.replace("/(tabs)/profile"); 
     }
   }, [isAuthenticated]);
 
